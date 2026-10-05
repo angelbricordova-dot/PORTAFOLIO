@@ -1,0 +1,20 @@
+{
+  "name": "lamont-portafolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portafolio de Lamont con panel de administración (Netlify Functions + Blobs)",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "assets": "node scripts/build-assets.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.1.0",
+    "@fontsource-variable/geist": "^5.1.0",
+    "@fontsource/geist-mono": "^5.1.0",
+    "@phosphor-icons/core": "^2.1.1"
+  }
+}

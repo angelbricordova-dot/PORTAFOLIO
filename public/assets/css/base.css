@@ -1,0 +1,79 @@
+/* Tokens, fuentes y piezas comunes del sitio y del panel. */
+@font-face { font-family: "Bricolage"; src: url("/assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("/assets/fonts/geist.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("/assets/fonts/geist-mono.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  /* Una sola paleta: gris frío claro + tinta + naranja (acento único). */
+  --bg: #f0f1f4;
+  --surface: #ffffff;
+  --ink: #0b0c0f;
+  --ink-2: #1a1c22;
+  --muted: #565b68;
+  --line: rgba(11, 12, 15, 0.12);
+  --accent: #ff4d1c;
+  --accent-ink: #0b0c0f;
+  --accent-soft: #ffe3d9;
+  --ok: #17794a;
+  --danger: #c4261d;
+
+  /* Formas: contenedores 24, campos 12, botones y chips en píldora. */
+  --r-box: 24px;
+  --r-field: 12px;
+  --r-pill: 999px;
+
+  --font-display: "Bricolage", "Geist", system-ui, sans-serif;
+  --font-body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
+  --shadow: 0 1px 0 rgba(11, 12, 15, 0.04), 0 18px 40px -22px rgba(30, 24, 20, 0.35);
+  --wrap: 1280px;
+  --gutter: clamp(16px, 4vw, 40px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 84px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 16px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+img, video, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+h1, h2, h3, h4, p { margin: 0; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.ico { width: 1.25em; height: 1.25em; fill: currentColor; flex: none; }
+
+/* Botones: píldora, un solo renglón, respuesta táctil al presionar. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.55em;
+  min-height: 48px; padding: 0 1.4em; border: 1.5px solid var(--ink); border-radius: var(--r-pill);
+  background: var(--ink); color: #fff; text-decoration: none; font-weight: 600; font-size: 15px; white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background-color 160ms, color 160ms, box-shadow 200ms var(--ease-out);
+}
+.btn:hover { background: var(--accent); border-color: var(--ink); color: var(--accent-ink); }
+.btn:active { transform: scale(0.97); }
+.btn--accent { background: var(--accent); color: var(--accent-ink); }
+.btn--accent:hover { background: var(--ink); color: #fff; }
+.btn--ghost { background: transparent; color: var(--ink); }
+.btn--ghost:hover { background: var(--ink); color: #fff; }
+.btn--sm { min-height: 38px; padding: 0 1.05em; font-size: 14px; }
+.btn[disabled] { opacity: 0.5; pointer-events: none; }
+.btn .ico { transition: transform 220ms var(--ease-out); }
+.btn:hover .ico { transform: translate(2px, -2px); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--r-pill);
+  border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 500; line-height: 1.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

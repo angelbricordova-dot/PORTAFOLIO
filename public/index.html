@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lamont — Editor, diseñador y estratega de contenido</title>
+  <meta name="description" content="Portafolio de Alejandro Gabriel Lamont Bencomo (Lamont): edición de video, diseño gráfico, social media, community management, YouTube y dirección creativa.">
+  <meta name="theme-color" content="#f0f1f4">
+  <meta property="og:title" content="Lamont — Editor, diseñador y estratega de contenido">
+  <meta property="og:description" content="Edición de video, diseño, redes y estrategia de contenido. Mira mis trabajos y mi trayectoria mes a mes.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/assets/img/lamont-head.png">
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+  <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+  <a class="skip" href="#trabajos">Saltar al contenido</a>
+
+  <header class="nav" id="nav">
+    <div class="nav__in">
+      <a class="brand" href="#top" aria-label="Lamont, inicio">
+        <img src="/assets/img/lamont-head.webp" alt="" width="36" height="36">
+        <span>Lamont</span>
+      </a>
+      <nav class="nav__links" id="navLinks" aria-label="Principal">
+        <a href="#trabajos">Trabajos</a>
+        <a href="#trayectoria">Trayectoria</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <a class="btn btn--accent btn--sm nav__cta" href="#contacto">Hablemos</a>
+      <button class="nav__burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks">
+        <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#list"></use></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__copy">
+        <p class="hero__who"><img src="/assets/img/lamont-head.webp" alt="" width="28" height="28"><span id="heroWho">Alejandro Gabriel Lamont Bencomo</span></p>
+        <h1 class="hero__title" id="heroTitle">Edito, diseño y dirijo contenido que engancha.</h1>
+        <p class="hero__intro" id="heroIntro">Editor de video, diseñador y estratega de contenido para marcas y creadores. Del guion a la publicación.</p>
+        <div class="hero__cta">
+          <a class="btn btn--accent" href="#trabajos">Ver trabajos <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-up-right"></use></svg></a>
+          <a class="btn btn--ghost" href="#contacto">Hablemos</a>
+        </div>
+      </div>
+
+      <div class="stage" id="stage" role="img" aria-label="Personaje 3D de Lamont que gira siguiendo el cursor">
+        <span class="stage__word" aria-hidden="true">LAMONT</span>
+        <div class="stage__frames" id="frames">
+          <img data-frame="front" src="/assets/img/lamont-front.webp" alt="" width="530" height="648" fetchpriority="high">
+          <img data-frame="q-front" src="/assets/img/lamont-q-front.webp" alt="" width="530" height="648">
+          <img data-frame="side" src="/assets/img/lamont-side.webp" alt="" width="530" height="648">
+          <img data-frame="q-back" src="/assets/img/lamont-q-back.webp" alt="" width="530" height="648">
+          <img data-frame="back" src="/assets/img/lamont-back.webp" alt="" width="530" height="648">
+        </div>
+        <span class="sticker sticker--a">Edición</span>
+        <span class="sticker sticker--b">Diseño</span>
+        <span class="sticker sticker--c">Estrategia</span>
+        <p class="stage__hint" id="stageHint"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-counter-clockwise"></use></svg> Toca para girarme</p>
+      </div>
+    </section>
+
+    <!-- ROLES -->
+    <div class="roles" aria-label="Roles">
+      <div class="roles__track" id="rolesTrack"></div>
+    </div>
+
+    <!-- TRABAJOS -->
+    <section class="section" id="trabajos">
+      <div class="section__head">
+        <h2 class="h2">Trabajos</h2>
+        <div class="filters" id="filters" role="tablist" aria-label="Filtrar por categoría"></div>
+      </div>
+      <div class="work" id="work" aria-live="polite">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- TRAYECTORIA -->
+    <section class="journey" id="trayectoria">
+      <div class="journey__in">
+        <div class="journey__head">
+          <p class="mono">Análisis automático de mi registro</p>
+          <h2 class="h2">Mi trayecto, mes a mes</h2>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="journey__grid">
+          <div class="read" id="read"></div>
+          <div class="side">
+            <div class="chart" id="chart"></div>
+            <div class="top" id="topClients"></div>
+          </div>
+        </div>
+        <div class="log">
+          <div class="log__head">
+            <h3 class="h3">Registro mensual</h3>
+            <div class="years" id="years" role="tablist" aria-label="Año"></div>
+          </div>
+          <div class="log__list" id="logList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section class="section" id="servicios">
+      <div class="section__head">
+        <h2 class="h2">Lo que hago</h2>
+      </div>
+      <div class="bento" id="bento"></div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section class="section section--tight" id="clientes" hidden>
+      <div class="section__head">
+        <h2 class="h2">Con quién he trabajado</h2>
+      </div>
+      <div class="clients" id="clients"></div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="section contact" id="contacto">
+      <div class="contact__copy">
+        <h2 class="h2 h2--xl">Cuéntame tu proyecto.</h2>
+        <p class="lead" id="availability">Abierto a nuevos proyectos</p>
+        <ul class="contact__links" id="contactLinks"></ul>
+      </div>
+      <form class="form" name="contacto" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
+        <input type="hidden" name="form-name" value="contacto">
+        <p hidden><label>No llenar este campo: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <div class="field">
+          <label for="f-name">Nombre</label>
+          <input id="f-name" name="nombre" type="text" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="f-email">Correo</label>
+          <input id="f-email" name="correo" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="f-msg">¿Qué necesitas?</label>
+          <textarea id="f-msg" name="mensaje" rows="5" required></textarea>
+          <span class="help">Cuéntame qué quieres lograr y para cuándo.</span>
+        </div>
+        <button class="btn btn--accent" type="submit" id="formBtn">Enviar mensaje <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-up-right"></use></svg></button>
+        <p class="form__msg" id="formMsg" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__in">
+      <a class="brand" href="#top"><img src="/assets/img/lamont-head.webp" alt="" width="36" height="36"><span>Lamont</span></a>
+      <p id="footName">Alejandro Gabriel Lamont Bencomo</p>
+      <a class="foot__admin" href="/admin">Panel</a>
+    </div>
+  </footer>
+
+  <dialog class="viewer" id="viewer" aria-label="Detalle del trabajo">
+    <button class="viewer__close" id="viewerClose" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#x"></use></svg></button>
+    <div class="viewer__body" id="viewerBody"></div>
+  </dialog>
+
+  <script type="module" src="/assets/js/site.js"></script>
+</body>
+</html>
