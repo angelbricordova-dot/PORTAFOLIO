@@ -25,6 +25,7 @@ El formulario de contacto usa Netlify Forms. Los mensajes llegan en **Forms** de
 
 - **Trabajos**: título, cliente, categoría, mes, descripción y etiquetas. Sube imágenes (se optimizan solas a WebP) o pega enlaces de YouTube, Vimeo, Drive o `.mp4`. Puedes elegir la portada, ordenar los medios, destacar un trabajo (tarjeta grande) u ocultarlo.
 - **Bitácora mensual**: por cada mes anota clientes, entregas (videos, diseños, publicaciones, campañas), logro y notas privadas. El sitio calcula solo las cifras, la gráfica de actividad, los clientes más constantes, la racha y un texto de análisis. «Generar resumen» crea el texto del mes.
+- **Testimonios**: publica mensajes de texto, **audios** de tus clientes (MP3, M4A, OGG/OPUS hasta 5 MB), capturas de sus mensajes y videos (enlace). Cada uno puede llevar estrellas, foto de la persona y destacarse. Además hay un **enlace para tus clientes** (`tu-sitio/#testimonio`): lo abren, escriben su testimonio y te llega al panel como «pendiente»; tú lo revisas, lo editas si quieres y lo publicas. Para audios de WhatsApp (`.opus`) conviene convertirlos a MP3/M4A si quieres que también suenen en iPhone.
 - **Clientes, Perfil, Servicios, Categorías**: todo lo que se ve en el sitio se edita aquí. En Perfil también están los años de experiencia («+8»), las fotos y las redes sociales (Instagram, TikTok, YouTube, LinkedIn, Behance, X, Threads, Facebook y Twitch).
 - **Respaldo**: descarga e importa un `.json` con todos tus datos.
 - Los cambios no se ven en el sitio hasta que pulsas **Publicar cambios** (o `Ctrl/Cmd + S`). Si cierras la pestaña sin publicar, el borrador se recupera al volver.
@@ -33,6 +34,7 @@ El formulario de contacto usa Netlify Forms. Los mensajes llegan en **Forms** de
 
 - Cada archivo subido puede pesar hasta **5 MB** (límite de las funciones de Netlify). Sirve para imágenes y clips cortos. Para videos largos usa enlaces de YouTube o Vimeo.
 - Quitar una imagen de un trabajo no la borra del almacenamiento; no afecta al sitio.
+- El formulario público de testimonios limita a 3 envíos por hora por visitante y guarda como máximo 60 pendientes; nada se publica sin tu aprobación.
 - Un solo administrador: si dos personas publican a la vez, gana el último en guardar.
 
 ## Probar en local

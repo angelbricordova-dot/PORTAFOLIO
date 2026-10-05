@@ -16,8 +16,15 @@ const ALLOWED_TYPES = {
   "image/gif": "gif",
   "video/mp4": "mp4",
   "video/webm": "webm",
+  "audio/mpeg": "mp3",
+  "audio/mp4": "m4a",
+  "audio/aac": "aac",
+  "audio/ogg": "ogg",
+  "audio/wav": "wav",
+  "audio/webm": "weba",
 };
-const DOC_KEYS = ["profile", "services", "categories", "clients", "projects", "months", "settings"];
+const DOC_KEYS = ["profile", "services", "categories", "clients", "projects", "months", "testimonials", "settings"];
+const MAX_PENDING = 60;
 
 /* ---------- almacenamiento ---------- */
 let storePromise;
@@ -91,12 +98,25 @@ function cleanDoc(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null;
   const doc = {};
   for (const key of DOC_KEYS) if (key in input) doc[key] = input[key];
-  for (const key of ["services", "categories", "clients", "projects", "months"]) {
+  for (const key of ["services", "categories", "clients", "projects", "months", "testimonials"]) {
     if (key in doc && !Array.isArray(doc[key])) return null;
   }
   if (doc.profile && (typeof doc.profile !== "object" || Array.isArray(doc.profile))) return null;
   return doc;
 }
+
+// Límite sencillo por IP para el formulario público (por instancia; basta para frenar el spam casual).
+const hits = new Map();
+function throttled(req) {
+  const ip = req.headers.get("x-nf-client-connection-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "local";
+  const now = Date.now();
+  const list = (hits.get(ip) || []).filter((t) => now - t < 3600e3);
+  if (list.length >= 3) { hits.set(ip, list); return true; }
+  list.push(now); hits.set(ip, list);
+  if (hits.size > 500) hits.clear();
+  return false;
+}
+const clip = (v, n) => String(v ?? "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").trim().slice(0, n);
 
 /* ---------- rutas ---------- */
 export default async (req) => {
@@ -128,6 +148,23 @@ export default async (req) => {
       return json(doc || { empty: true }, 200, { "cache-control": "public, max-age=0, must-revalidate" });
     }
 
+    // Testimonio enviado por un cliente: queda pendiente hasta que Lamont lo apruebe.
+    if (path === "/api/testimonials" && method === "POST") {
+      const raw = await req.text();
+      if (raw.length > 4000) return fail(413, "El mensaje es demasiado largo");
+      let body; try { body = JSON.parse(raw); } catch { return fail(400, "Formato inválido"); }
+      if (body.website) return json({ ok: true }); // campo trampa para bots
+      const item = { name: clip(body.name, 80), role: clip(body.role, 100), message: clip(body.message, 700), rating: Math.min(5, Math.max(0, parseInt(body.rating, 10) || 0)) };
+      if (!item.name || item.message.length < 10) return fail(400, "Escribe tu nombre y un mensaje de al menos 10 caracteres.");
+      if (throttled(req)) return fail(429, "Ya enviaste varios mensajes. Inténtalo más tarde.");
+      const store = await getStorage();
+      const list = (await store.get("pending", { type: "json" })) || [];
+      if (list.length >= MAX_PENDING) return fail(503, "Hay demasiados mensajes pendientes. Inténtalo más tarde.");
+      list.push({ id: randomUUID(), ...item, createdAt: new Date().toISOString() });
+      await store.setJSON("pending", list);
+      return json({ ok: true });
+    }
+
     if (path === "/api/login" && method === "POST") {
       if (!process.env.ADMIN_PASSWORD) return fail(503, "Falta configurar ADMIN_PASSWORD en Netlify (Site configuration → Environment variables).");
       const body = await req.json().catch(() => ({}));
@@ -156,10 +193,23 @@ export default async (req) => {
       return json({ ok: true, updatedAt: doc.updatedAt });
     }
 
+    if (path === "/api/pending" && method === "GET") {
+      const store = await getStorage();
+      return json({ items: (await store.get("pending", { type: "json" })) || [] });
+    }
+
+    if (path.startsWith("/api/pending/") && method === "DELETE") {
+      const id = path.slice(13);
+      const store = await getStorage();
+      const list = ((await store.get("pending", { type: "json" })) || []).filter((x) => x.id !== id);
+      await store.setJSON("pending", list);
+      return json({ ok: true });
+    }
+
     if (path === "/api/upload" && method === "POST") {
       const type = (req.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
       const ext = ALLOWED_TYPES[type];
-      if (!ext) return fail(415, "Formato no permitido. Usa JPG, PNG, WebP, GIF, MP4 o WebM.");
+      if (!ext) return fail(415, "Formato no permitido. Usa imágenes (JPG, PNG, WebP, GIF), MP4/WebM o audio (MP3, M4A, AAC, OGG, WAV).");
       const buf = await req.arrayBuffer();
       if (!buf.byteLength) return fail(400, "Archivo vacío");
       if (buf.byteLength > MAX_UPLOAD) return fail(413, "El archivo supera 5 MB. Para videos largos usa un enlace de YouTube o Vimeo.");

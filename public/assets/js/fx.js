@@ -37,7 +37,7 @@ export function initCursor() {
     m.x = e.clientX; m.y = e.clientY;
     const t = e.target.closest?.("a, button, summary, [data-cursor], .pill, .card, .client, .cell, label, [role=button]");
     link = !!t && !t.matches?.("[data-cursor-off]");
-    text = t?.closest("[data-cursor]")?.dataset.cursor || (t?.matches?.(".card") ? "Ver" : "");
+    text = t?.dataset?.cursor || (t?.matches?.(".card") ? "Ver" : "");
     const inField = e.target.closest?.("input, textarea, select");
     ringWrap.classList.toggle("is-link", link && !text);
     const showLabel = !!text && !inField;
@@ -140,7 +140,7 @@ export function initHero() {
 /* ---------- Cinta de roles: arrastrable, y más lenta (no se detiene) al pasar el cursor ---------- */
 export function initTicker(host, track, items) {
   if (!host || !items.length) return;
-  const unit = items.map((r) => `<span class="roles__item"><span>${r}</span><i class="roles__sep" aria-hidden="true"></i></span>`).join("");
+  const unit = items.map((r) => `<span class="roles__item"><span>${r}</span></span>`).join("");
   track.innerHTML = unit;
   const one = track.scrollWidth;
   const copies = Math.max(2, Math.ceil((innerWidth * 2) / Math.max(one, 1)) + 1);

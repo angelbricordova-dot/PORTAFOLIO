@@ -157,3 +157,11 @@
 .thumb--round { border-radius: 14px; background: var(--blue-soft); } .thumb--round img { object-fit: contain; padding: 6px; }
 .thumb--photo { width: 72px; height: 88px; border-radius: 14px; }
 .brand img, .login__card img { border-radius: 0; object-fit: contain; }
+
+.nav-btn .dot { margin-left: 6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 12px; display: inline-grid; place-items: center; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label { cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--line); border-radius: var(--r-pill); font-weight: 600; font-size: 14px; transition: background-color 150ms, color 150ms; }
+.seg input:checked + span { background: var(--solid); color: var(--on-solid); border-color: var(--solid); }
+.seg input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }

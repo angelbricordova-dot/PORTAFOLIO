@@ -13,6 +13,7 @@ async function boot() {
   renderRoles();
   renderWork();
   renderJourney();
+  renderTestimonials();
   renderServices();
   renderClients();
   renderContact();
@@ -23,6 +24,7 @@ async function boot() {
   initMagnets();
   const hash = location.hash.match(/^#trabajo-(.+)$/);
   if (hash) openProject(hash[1]);
+  if (location.hash === "#testimonio") openTestimonialForm();
 }
 
 /* ---------- Portada ---------- */
@@ -419,3 +421,165 @@ function initProgress() {
   addEventListener("resize", queue);
   update();
 }
+
+/* ---------- Testimonios ---------- */
+const TYPES = { text: ["quotes", "Mensaje"], audio: ["microphone", "Audio"], image: ["image", "Captura"], video: ["video-camera", "Video"] };
+const lightbox = $("#lightbox"), tform = $("#tform");
+let testi = [];
+
+function renderTestimonials() {
+  testi = site.testimonials
+    .filter((t) => t.visible !== false)
+    .sort((a, b) => Number(!!b.featured) - Number(!!a.featured) || String(b.date).localeCompare(String(a.date)));
+  const section = $("#testimonios");
+  $("#navTesti").hidden = !testi.length;
+  if (!testi.length) return (section.hidden = true);
+  section.hidden = false;
+  const box = $("#testi");
+  box.innerHTML = testi.map(tcardHTML).join("");
+  box.querySelectorAll("[data-audio]").forEach(initAudio);
+  box.addEventListener("click", (e) => { const b = e.target.closest("[data-lb]"); if (b && !dragged) openLightbox(b.dataset.lb); });
+  initCarousel(box);
+}
+
+function tcardHTML(t) {
+  const [ico, label] = TYPES[t.type] || TYPES.text;
+  const stars = Number(t.rating) > 0 ? `<span class="stars" role="img" aria-label="${Number(t.rating)} de 5 estrellas">${icon("star-fill").repeat(Math.min(5, Number(t.rating)))}</span>` : "<span></span>";
+  const quote = String(t.quote || "");
+  const m = parseMedia(t.media);
+  let body = "";
+  if (t.type === "audio" && m?.type === "audio") {
+    body = `<div class="audio" data-audio="${esc(m.src)}" data-id="${esc(t.id)}"><button class="audio__btn" type="button" aria-label="Reproducir audio de ${esc(t.name)}">${icon("play-fill", "play")}${icon("pause", "pause")}</button><div class="wave" aria-hidden="true">${waveBars(t.id)}</div><span class="audio__time">0:00</span></div>`;
+    if (quote) body += `<p class="tcard__quote" style="font-size:1.05rem;-webkit-line-clamp:5">${esc(quote)}</p>`;
+  } else if (t.type === "image" && m) {
+    body = `<button class="shot" type="button" data-lb="${esc(t.id)}" aria-label="Ampliar captura de ${esc(t.name)}"><img src="${esc(m.src)}" alt="Captura de ${esc(t.name)}" loading="lazy"></button>`;
+    if (quote) body += `<p class="tcard__quote" style="font-size:1.05rem;-webkit-line-clamp:4">${esc(quote)}</p>`;
+  } else if (t.type === "video" && m) {
+    const thumb = m.thumb ? `<img src="${esc(m.thumb)}" alt="" loading="lazy">` : `<div class="shot__ph">${icon("video-camera")}</div>`;
+    body = `<button class="shot" type="button" data-lb="${esc(t.id)}" aria-label="Ver video de ${esc(t.name)}">${thumb}<span class="shot__play">${icon("play-circle-fill")}</span></button>`;
+    if (quote) body += `<p class="tcard__quote" style="font-size:1.05rem;-webkit-line-clamp:4">${esc(quote)}</p>`;
+  } else {
+    body = `<p class="tcard__quote">${esc(quote)}</p>${quote.length > 300 ? `<button class="tcard__more" type="button" data-lb="${esc(t.id)}">Leer completo</button>` : ""}`;
+  }
+  const av = safeUrl(t.avatar);
+  const who = [t.role, t.date && cap(monthLong(t.date))].filter(Boolean).join(" · ");
+  return `<article class="tcard ${t.featured ? "tcard--featured" : ""}" role="listitem">
+    <div class="tcard__top">${stars}${t.demo ? `<span class="tcard__demo">Ejemplo</span>` : `<span class="tcard__type">${icon(ico)}${label}</span>`}</div>
+    ${body}
+    <div class="tcard__who"><span class="tcard__av">${av ? `<img src="${esc(av)}" alt="" loading="lazy">` : esc((t.name || "?").trim()[0]?.toUpperCase())}</span><div><b>${esc(t.name)}</b>${who ? `<span>${esc(who)}</span>` : ""}</div></div>
+  </article>`;
+}
+
+// Barras de onda: altura estable por testimonio (no es la forma real del audio).
+function waveBars(id) {
+  let h = 2166136261;
+  for (const c of String(id)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return ((h >>> 0) % 1000) / 1000; };
+  let prev = 0.5;
+  return Array.from({ length: 38 }, () => { prev = Math.min(1, Math.max(0.2, prev * 0.45 + rnd() * 0.65)); return `<i style="--h:${Math.round(prev * 100)}%"></i>`; }).join("");
+}
+
+let playing = null;
+function initAudio(host) {
+  const audio = new Audio();
+  audio.preload = "none";
+  audio.src = host.dataset.audio;
+  const bars = [...host.querySelectorAll(".wave i")], time = host.querySelector(".audio__time");
+  const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00");
+  const paint = () => {
+    const p = audio.duration ? audio.currentTime / audio.duration : 0;
+    bars.forEach((b, i) => b.classList.toggle("on", i < Math.round(p * bars.length)));
+    time.textContent = fmt(audio.paused && !audio.currentTime ? audio.duration : audio.currentTime);
+  };
+  audio.addEventListener("loadedmetadata", paint);
+  audio.addEventListener("timeupdate", paint);
+  audio.addEventListener("ended", () => { host.classList.remove("is-playing"); audio.currentTime = 0; paint(); });
+  audio.addEventListener("pause", () => host.classList.remove("is-playing"));
+  audio.addEventListener("play", () => host.classList.add("is-playing"));
+  audio.addEventListener("error", () => { time.textContent = "Error"; host.classList.remove("is-playing"); });
+  host.querySelector(".audio__btn").addEventListener("click", () => {
+    if (audio.paused) {
+      if (playing && playing !== audio) playing.pause();
+      playing = audio;
+      audio.play().catch(() => { time.textContent = "Error"; });
+    } else audio.pause();
+  });
+  host.querySelector(".wave").addEventListener("click", (e) => {
+    if (!audio.duration) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    audio.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * audio.duration;
+    paint();
+  });
+}
+
+/* Carrusel: botones, teclado y arrastre con mouse */
+let dragged = false;
+function initCarousel(box) {
+  const prev = $("#tPrev"), next = $("#tNext");
+  const step = () => (box.querySelector(".tcard")?.getBoundingClientRect().width || 360) + 16;
+  const update = () => {
+    const max = box.scrollWidth - box.clientWidth;
+    prev.disabled = box.scrollLeft <= 2; next.disabled = box.scrollLeft >= max - 2;
+    $(".carousel-nav").style.visibility = max > 4 ? "visible" : "hidden";
+  };
+  prev.onclick = () => box.scrollBy({ left: -step(), behavior: reduceMotion ? "auto" : "smooth" });
+  next.onclick = () => box.scrollBy({ left: step(), behavior: reduceMotion ? "auto" : "smooth" });
+  box.addEventListener("scroll", update, { passive: true });
+  addEventListener("resize", update);
+  update();
+
+  let down = false, startX = 0, startLeft = 0;
+  box.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "mouse" || e.target.closest("button, a, .wave")) return;
+    down = true; dragged = false; startX = e.clientX; startLeft = box.scrollLeft;
+  });
+  addEventListener("pointermove", (e) => {
+    if (!down) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 5) { dragged = true; box.classList.add("is-drag"); }
+    if (dragged) box.scrollLeft = startLeft - dx;
+  });
+  addEventListener("pointerup", () => { if (!down) return; down = false; box.classList.remove("is-drag"); setTimeout(() => { dragged = false; }, 0); });
+}
+
+/* Visor ampliado */
+function openLightbox(id) {
+  const t = testi.find((x) => x.id === id);
+  if (!t) return;
+  const m = parseMedia(t.media);
+  const who = `<div class="tcard__who"><span class="tcard__av">${safeUrl(t.avatar) ? `<img src="${esc(safeUrl(t.avatar))}" alt="">` : esc((t.name || "?")[0].toUpperCase())}</span><div><b>${esc(t.name)}</b>${t.role ? `<span>${esc(t.role)}</span>` : ""}</div></div>`;
+  let html;
+  if (t.type === "image" && m) html = `<img src="${esc(m.src)}" alt="Captura de ${esc(t.name)}">${t.quote ? `<p class="lightbox__cap">${esc(t.quote)}</p>` : ""}<div class="lightbox__cap">${who}</div>`;
+  else if (t.type === "video" && m?.type === "embed") html = `<iframe src="${esc(m.src)}" title="Video de ${esc(t.name)}" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="lightbox__cap">${who}</div>`;
+  else if (t.type === "video" && m?.type === "video") html = `<video src="${esc(m.src)}" controls playsinline></video><div class="lightbox__cap">${who}</div>`;
+  else html = `<div class="lightbox__text">${Number(t.rating) > 0 ? `<span class="stars">${icon("star-fill").repeat(Math.min(5, Number(t.rating)))}</span>` : ""}<blockquote>${esc(t.quote)}</blockquote>${who}</div>`;
+  $("#lbBody").innerHTML = html;
+  lightbox.showModal(); setCursorEnabled(false);
+}
+$("#lbClose").addEventListener("click", () => lightbox.close());
+lightbox.addEventListener("click", (e) => { if (e.target === lightbox) lightbox.close(); });
+lightbox.addEventListener("close", () => { $("#lbBody").innerHTML = ""; setCursorEnabled(true); });
+
+/* Formulario público para que un cliente deje su testimonio */
+function openTestimonialForm() {
+  $("#tMsg").textContent = ""; $("#tMsg").className = "form__msg";
+  if (!tform.open) { tform.showModal(); setCursorEnabled(false); }
+}
+document.addEventListener("click", (e) => { if (e.target.closest("[data-open-testimonial]")) openTestimonialForm(); });
+tform.addEventListener("click", (e) => { if (e.target === tform || e.target.closest("[data-tclose]")) tform.close(); });
+tform.addEventListener("close", () => { setCursorEnabled(true); if (location.hash === "#testimonio") history.replaceState(null, "", location.pathname + location.search); });
+$("#tformForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget, msg = $("#tMsg"), btn = $("#tBtn");
+  const data = Object.fromEntries(new FormData(form));
+  if (!String(data.name).trim() || String(data.message).trim().length < 10) { msg.className = "form__msg err"; msg.textContent = "Escribe tu nombre y un mensaje de al menos 10 caracteres."; return; }
+  btn.disabled = true; msg.className = "form__msg"; msg.textContent = "Enviando…";
+  try {
+    const res = await fetch("/api/testimonials", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || "No se pudo enviar. Inténtalo de nuevo en un momento.");
+    form.reset(); msg.className = "form__msg ok"; msg.textContent = "Gracias. Tu testimonio se publicará cuando lo revise.";
+    setTimeout(() => tform.open && tform.close(), 2800);
+  } catch (err) { msg.className = "form__msg err"; msg.textContent = err.message; }
+  finally { btn.disabled = false; }
+});

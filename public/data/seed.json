@@ -322,5 +322,35 @@
   ],
   "settings": {
     "demoContent": true
-  }
+  },
+  "testimonials": [
+    {
+      "id": "t1",
+      "type": "text",
+      "name": "Cliente de ejemplo",
+      "role": "Marca de ejemplo",
+      "quote": "Texto de ejemplo: aquí aparecerá lo que tu cliente escriba sobre tu trabajo. Reemplázalo con testimonios reales desde el panel.",
+      "rating": 5,
+      "media": "",
+      "avatar": "",
+      "date": "2026-09",
+      "featured": true,
+      "visible": true,
+      "demo": true
+    },
+    {
+      "id": "t2",
+      "type": "text",
+      "name": "Otra persona de ejemplo",
+      "role": "Creador de contenido",
+      "quote": "Otro texto de ejemplo. También puedes publicar audios, capturas de mensajes y videos de tus clientes.",
+      "rating": 5,
+      "media": "",
+      "avatar": "",
+      "date": "2026-08",
+      "featured": false,
+      "visible": true,
+      "demo": true
+    }
+  ]
 }

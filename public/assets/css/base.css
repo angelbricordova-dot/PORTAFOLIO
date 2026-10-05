@@ -27,6 +27,10 @@
   --field-line: #a3b1ca;
   --sk-a: #d8e2f2;
   --sk-b: #e8eef8;
+  --cur: #0a1a3f;
+  --cur-track: rgba(10, 26, 63, 0.4);
+  --cur-halo: rgba(255, 255, 255, 0.95);
+  --wave-off: rgba(10, 26, 63, 0.2);
   --ok: #17794a;
   --danger: #c4261d;
 
@@ -69,6 +73,10 @@ html[data-theme="dark"] {
   --sk-a: #0f1d42;
   --sk-b: #162651;
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 40px -22px rgba(0, 0, 0, 0.7);
+  --cur: #ffffff;
+  --cur-track: rgba(255, 255, 255, 0.45);
+  --cur-halo: rgba(5, 12, 32, 0.85);
+  --wave-off: rgba(234, 240, 248, 0.22);
 }
 
 *, *::before, *::after { box-sizing: border-box; }

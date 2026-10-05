@@ -10,6 +10,7 @@ let dirty = false;
 let view = "home";
 let token = safe(() => localStorage.getItem(TOKEN_KEY));
 let filters = { q: "", cat: "all" };
+let pending = [];      // testimonios enviados por clientes, esperando revisión
 
 function safe(fn) { try { return fn(); } catch { return null; } }
 
@@ -78,7 +79,15 @@ async function start() {
   applyLogo();
   go(view);
   setStatus();
+  loadPending();
 }
+
+async function loadPending() {
+  try { pending = (await api("/api/pending")).items || []; } catch { pending = []; }
+  go(view);
+}
+// Los que ya pasaron al borrador no se muestran como pendientes.
+const pendingList = () => pending.filter((p) => !S.testimonials.some((t) => t.pendingId === p.id));
 
 /* ============ Estado y guardado ============ */
 function touch() {
@@ -103,6 +112,10 @@ async function publish() {
     dirty = false;
     safe(() => localStorage.removeItem(DRAFT_KEY));
     toast("Publicado. Tu sitio ya muestra los cambios.");
+    // los testimonios aprobados dejan de estar pendientes
+    const done = pending.filter((p) => S.testimonials.some((t) => t.pendingId === p.id));
+    await Promise.all(done.map((p) => api(`/api/pending/${p.id}`, { method: "DELETE" }).catch(() => {})));
+    if (done.length) { pending = pending.filter((p) => !done.includes(p)); go(view); }
   } catch (e) {
     if (e.message !== "sesión") toast(e.message || "No se pudo publicar", true);
   } finally { setStatus(); }
@@ -123,6 +136,7 @@ function toast(text, isError = false) {
 const VIEWS = {
   home: ["Resumen", "house"],
   projects: ["Trabajos", "film-strip"],
+  testimonials: ["Testimonios", "quotes"],
   months: ["Bitácora mensual", "calendar-blank"],
   clients: ["Clientes", "users"],
   profile: ["Perfil y contacto", "note-pencil"],
@@ -139,8 +153,9 @@ function applyLogo() {
 function go(name) {
   view = name;
   $("#nav").innerHTML = Object.entries(VIEWS).map(([id, [label, ico]]) => {
-    const count = { projects: S.projects.length, months: S.months.length, clients: S.clients.length }[id];
-    return `<button class="nav-btn" data-go="${id}" ${id === view ? 'aria-current="page"' : ""}>${icon(ico)}${esc(label)}${count != null ? `<small>${count}</small>` : ""}</button>`;
+    const count = { projects: S.projects.length, testimonials: S.testimonials.length, months: S.months.length, clients: S.clients.length }[id];
+    const waiting = id === "testimonials" ? pendingList().length : 0;
+    return `<button class="nav-btn" data-go="${id}" ${id === view ? 'aria-current="page"' : ""}>${icon(ico)}${esc(label)}${waiting ? `<b class="dot" title="Pendientes de revisar">${waiting}</b>` : ""}${count != null ? `<small>${count}</small>` : ""}</button>`;
   }).join("");
   $("#title").textContent = VIEWS[name][0];
   paint();
@@ -148,7 +163,7 @@ function go(name) {
 $("#nav").addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) { go(b.dataset.go); scrollTo(0, 0); } });
 
 function paint() {
-  $("#view").innerHTML = ({ home: viewHome, projects: viewProjects, months: viewMonths, clients: viewClients, profile: viewProfile, services: viewServices, categories: viewCategories, backup: viewBackup })[view]();
+  $("#view").innerHTML = ({ home: viewHome, projects: viewProjects, testimonials: viewTestimonials, months: viewMonths, clients: viewClients, profile: viewProfile, services: viewServices, categories: viewCategories, backup: viewBackup })[view]();
 }
 
 /* ============ Resumen ============ */
@@ -321,8 +336,10 @@ async function addFiles(files) {
 }
 
 // Las imágenes se reducen y pasan a WebP en el navegador: cargan rápido y caben en el límite de 5 MB.
+const AUDIO_EXT = { mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", ogg: "audio/ogg", oga: "audio/ogg", opus: "audio/ogg", wav: "audio/wav", weba: "audio/webm" };
 async function uploadFile(file) {
-  let blob = file, type = file.type;
+  const ext = file.name.split(".").pop().toLowerCase();
+  let blob = file, type = AUDIO_EXT[ext] || file.type;
   if (type.startsWith("image/") && type !== "image/gif") {
     const bmp = await createImageBitmap(file);
     const scale = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
@@ -347,6 +364,130 @@ $("#dlg").addEventListener("click", (e) => {
   if (b.dataset.media === "cover") draftCover = draftCover === draftMedia[i].url ? "" : draftMedia[i].url;
   renderMediaBox();
 });
+
+/* ============ Testimonios ============ */
+const T_TYPES = { text: ["quotes", "Mensaje de texto"], audio: ["microphone", "Audio"], image: ["image", "Captura / prueba"], video: ["video-camera", "Video (enlace)"] };
+const starsText = (n) => (Number(n) > 0 ? "★".repeat(Number(n)) + "☆".repeat(5 - Number(n)) : "Sin valoración");
+
+function viewTestimonials() {
+  const waiting = pendingList();
+  const list = [...S.testimonials].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return `
+    <section class="panel">
+      <h2>Enlace para tus clientes</h2>
+      <p class="muted">Compártelo para que cada cliente escriba su testimonio. Llega aquí como «pendiente» y solo se publica cuando tú lo apruebas.</p>
+      <div class="add-link"><input type="text" readonly value="${esc(location.origin)}/#testimonio" aria-label="Enlace del formulario" onfocus="this.select()"><button class="btn btn--sm" data-act="copy-link">${icon("copy")} Copiar</button></div>
+    </section>
+    ${waiting.length ? `<section class="panel"><h2>Pendientes de revisar (${waiting.length})</h2><div class="list">${waiting.map((p) => `
+      <article class="item" style="grid-template-columns:minmax(0,1fr) auto"><div style="padding:6px 8px">
+        <h3>${esc(p.name)} <span class="muted" style="font-weight:500">${esc(p.role || "")}</span></h3>
+        <div class="meta"><span>${esc(starsText(p.rating))}</span><span>${esc(new Date(p.createdAt).toLocaleDateString("es"))}</span></div>
+        <p style="margin-top:8px;white-space:pre-line;overflow-wrap:anywhere">${esc(p.message)}</p></div>
+        <div class="item__actions" style="flex-direction:column;align-items:stretch"><button class="btn btn--sm btn--accent" data-act="pending-open" data-id="${esc(p.id)}">Revisar y publicar</button><button class="btn btn--sm btn--ghost" data-act="pending-del" data-id="${esc(p.id)}">Descartar</button></div></article>`).join("")}</div></section>` : ""}
+    <div class="toolbar"><button class="btn btn--accent" data-act="testi-new">${icon("plus")} Nuevo testimonio</button><span class="help">Sube audios de tus clientes, capturas de sus mensajes, videos o textos.</span></div>
+    <div class="list">${list.length ? list.map((t) => {
+      const [ico, label] = T_TYPES[t.type] || T_TYPES.text;
+      return `<article class="item ${t.visible === false ? "is-hidden" : ""}" style="grid-template-columns:56px minmax(0,1fr) auto">
+        <div class="thumb" style="width:56px;height:56px">${t.type === "image" && safeUrl(t.media) ? `<img src="${esc(t.media)}" alt="" loading="lazy">` : icon(ico)}</div>
+        <div><h3>${esc(t.name || "Sin nombre")} ${t.demo ? `<span class="tag tag--demo">Ejemplo</span>` : ""}</h3>
+          <div class="meta"><span class="tag">${esc(label)}</span><span>${esc(starsText(t.rating))}</span>${t.role ? `<span>${esc(t.role)}</span>` : ""}</div>
+          ${t.quote ? `<p class="muted" style="margin-top:6px;font-size:14px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(t.quote)}</p>` : ""}</div>
+        <div class="item__actions">
+          <button class="icon-btn ${t.featured ? "on" : ""}" data-act="testi-star" data-id="${esc(t.id)}" title="Destacar (tarjeta dorada y primero)" aria-label="Destacar" aria-pressed="${!!t.featured}">${icon(t.featured ? "star-fill" : "star")}</button>
+          <button class="icon-btn" data-act="testi-vis" data-id="${esc(t.id)}" title="${t.visible === false ? "Oculto: mostrar" : "Visible: ocultar"}" aria-label="Mostrar u ocultar">${icon(t.visible === false ? "eye-slash" : "eye")}</button>
+          <button class="icon-btn" data-act="testi-edit" data-id="${esc(t.id)}" title="Editar" aria-label="Editar">${icon("pencil-simple")}</button>
+          <button class="icon-btn danger" data-act="testi-del" data-id="${esc(t.id)}" title="Borrar" aria-label="Borrar">${icon("trash")}</button>
+        </div></article>`;
+    }).join("") : `<div class="empty"><strong>Aún no hay testimonios</strong><span>Publica el primero: un mensaje, un audio o una captura de tu cliente.</span></div>`}</div>`;
+}
+
+let draftT = { media: "", avatar: "" };
+function openTestimonialForm(id, fromPending) {
+  const existing = S.testimonials.find((t) => t.id === id);
+  const t = existing ? structuredClone(existing) : {
+    id: uid("t"), type: "text", name: fromPending?.name || "", role: fromPending?.role || "", quote: fromPending?.message || "",
+    rating: fromPending ? fromPending.rating : 5, media: "", avatar: "", date: thisMonth(), featured: false, visible: true, pendingId: fromPending?.id,
+  };
+  draftT = { media: t.media || "", avatar: t.avatar || "" };
+  openDialog({
+    title: existing ? "Editar testimonio" : fromPending ? "Revisar y publicar" : "Nuevo testimonio",
+    body: `
+      <div class="field"><span class="label">Tipo</span><div class="seg" role="radiogroup" aria-label="Tipo">${Object.entries(T_TYPES).map(([k, [ico, label]]) => `<label><input type="radio" name="type" value="${k}" ${t.type === k ? "checked" : ""}><span>${icon(ico)} ${esc(label)}</span></label>`).join("")}</div></div>
+      <div class="row"><div class="field"><label for="t-name">Nombre</label><input id="t-name" name="name" required maxlength="80" value="${esc(t.name)}"></div>
+        <div class="field"><label for="t-role">Cargo o marca</label><input id="t-role" name="role" maxlength="100" value="${esc(t.role)}"></div></div>
+      <div class="row"><div class="field"><label for="t-rating">Valoración</label><select id="t-rating" name="rating">${[5, 4, 3, 2, 1, 0].map((n) => `<option value="${n}" ${Number(t.rating) === n ? "selected" : ""}>${n ? "★".repeat(n) + " " + n : "Sin estrellas"}</option>`).join("")}</select></div>
+        <div class="field"><label for="t-date">Mes</label><input id="t-date" name="date" type="month" value="${esc(t.date || "")}"></div></div>
+      <div class="field"><label for="t-quote" id="t-quote-label">Testimonio</label><textarea id="t-quote" name="quote" rows="4" maxlength="900">${esc(t.quote)}</textarea><span class="help" id="t-quote-help"></span></div>
+      <div class="field" id="mediaField"><span class="label" id="mediaLabel">Archivo</span><div id="tMedia"></div></div>
+      <div class="field"><span class="label">Foto de la persona (opcional)</span>
+        <div class="toolbar"><div class="thumb thumb--round" id="avPrev" style="width:56px;height:56px">${draftT.avatar ? `<img src="${esc(draftT.avatar)}" alt="">` : icon("image")}</div>
+          <label class="btn btn--sm btn--ghost" for="avIn">${icon("upload-simple")} Subir foto</label><input id="avIn" type="file" accept="image/*" hidden>
+          <button type="button" class="btn btn--sm btn--ghost" id="avClear">Quitar</button></div></div>
+      <div class="toolbar"><label class="check"><input type="checkbox" name="featured" ${t.featured ? "checked" : ""}> Destacado (tarjeta dorada)</label><label class="check"><input type="checkbox" name="visible" ${t.visible !== false ? "checked" : ""}> Visible en el sitio</label></div>`,
+    onOpen: () => {
+      const form = $("#dlgForm");
+      const sync = () => { renderTMedia(form.elements.type.value); };
+      form.onchange = (e) => { if (e.target.name === "type") sync(); };
+      $("#avIn").addEventListener("change", async (e) => {
+        try { draftT.avatar = await uploadFile(e.target.files[0]); $("#avPrev").innerHTML = `<img src="${esc(draftT.avatar)}" alt="">`; } catch (err) { toast(err.message, true); }
+      });
+      $("#avClear").addEventListener("click", () => { draftT.avatar = ""; $("#avPrev").innerHTML = icon("image"); });
+      sync();
+    },
+    onSubmit: (fd) => {
+      const type = fd.get("type");
+      const next = {
+        ...t, type, name: String(fd.get("name")).trim(), role: String(fd.get("role")).trim(), quote: String(fd.get("quote")).trim(),
+        rating: Number(fd.get("rating")) || 0, date: fd.get("date") || "", media: type === "text" ? "" : draftT.media, avatar: draftT.avatar,
+        featured: fd.get("featured") === "on", visible: fd.get("visible") === "on", demo: false,
+      };
+      if (type !== "text" && !next.media) { toast("Falta el archivo o enlace del testimonio.", true); return false; }
+      const i = S.testimonials.findIndex((x) => x.id === t.id);
+      if (i >= 0) S.testimonials[i] = next; else S.testimonials.unshift(next);
+      touch(); go("testimonials"); toast("Testimonio guardado. Recuerda publicar los cambios.");
+    },
+  });
+}
+
+function renderTMedia(type) {
+  const box = $("#tMedia");
+  $("#mediaField").hidden = type === "text";
+  $("#t-quote-label").textContent = type === "text" ? "Testimonio" : "Frase o transcripción (opcional)";
+  $("#t-quote-help").textContent = type === "audio" ? "Puedes escribir lo que dice el audio, para quien no pueda escucharlo." : type === "image" ? "Un pie corto para la captura." : "";
+  if (type === "text") return;
+  const accept = type === "audio" ? "audio/*,.opus,.m4a,.mp3,.ogg,.aac,.wav" : type === "image" ? "image/*" : "";
+  $("#mediaLabel").textContent = { audio: "Audio del cliente", image: "Captura o prueba", video: "Enlace del video" }[type];
+  const cur = draftT.media;
+  const parsed = cur ? parseMedia(cur) : null;
+  const preview = !cur ? "" : parsed?.type === "audio" ? `<audio controls src="${esc(cur)}" style="width:100%"></audio>` : parsed?.type === "image" ? `<div class="thumb" style="width:120px;height:90px"><img src="${esc(cur)}" alt=""></div>` : `<small class="muted">${esc(cur)}</small>`;
+  box.innerHTML = `
+    ${type !== "video" ? `<label class="drop" id="tDrop"><input type="file" id="tFile" accept="${accept}" hidden>${icon("upload-simple")}<b>${cur ? "Cambiar archivo" : "Arrastra el archivo o toca para elegirlo"}</b><span class="help">${type === "audio" ? "MP3, M4A, OGG u OPUS hasta 5 MB. Si es una nota de voz de WhatsApp (.opus) y quieres que suene también en iPhone, conviértela a MP3 o M4A." : "Hasta 5 MB. Las imágenes se optimizan solas."}</span></label>` : ""}
+    <div class="add-link"><input type="url" id="tLink" placeholder="${type === "video" ? "Enlace de YouTube, Vimeo, Drive o .mp4" : "…o pega un enlace directo"}" value="${cur && /^https?:/.test(cur) ? esc(cur) : ""}" aria-label="Enlace"><button class="btn btn--sm" type="button" id="tLinkSet">Usar enlace</button></div>
+    ${preview ? `<div style="margin-top:6px">${preview}</div><button type="button" class="btn btn--sm btn--ghost" id="tClear" style="justify-self:start">Quitar</button>` : ""}`;
+  const file = $("#tFile"), drop = $("#tDrop");
+  if (file) {
+    file.addEventListener("change", async () => {
+      if (!file.files[0]) return;
+      drop.querySelector("b").textContent = `Subiendo ${file.files[0].name}…`;
+      try { draftT.media = await uploadFile(file.files[0]); } catch (e) { toast(e.message, true); }
+      renderTMedia(type);
+    });
+    drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", async (e) => {
+      e.preventDefault(); drop.classList.remove("over");
+      if (!e.dataTransfer.files[0]) return;
+      try { draftT.media = await uploadFile(e.dataTransfer.files[0]); } catch (err) { toast(err.message, true); }
+      renderTMedia(type);
+    });
+  }
+  $("#tLinkSet").addEventListener("click", () => {
+    const parsedLink = parseMedia($("#tLink").value);
+    if (!parsedLink) return toast("Ese enlace no es válido. Debe empezar con https://", true);
+    draftT.media = parsedLink.url; renderTMedia(type);
+  });
+  $("#tClear")?.addEventListener("click", () => { draftT.media = ""; renderTMedia(type); });
+}
 
 /* ============ Bitácora mensual ============ */
 function viewMonths() {
@@ -535,10 +676,11 @@ function openDialog({ title, body, onSubmit, onOpen }) {
   form.onsubmit = (e) => {
     e.preventDefault();
     if (e.submitter?.value !== "save") return;
-    onSubmit(new FormData(form), form);
+    if (onSubmit(new FormData(form), form) === false) return;
     dlg.close();
   };
   form.onclick = (e) => { if (e.target.closest("[data-close]")) dlg.close(); };
+  form.onchange = null;
   if (!dlg.open) dlg.showModal();
   initTagInputs(form);
   onOpen?.();
@@ -586,6 +728,14 @@ $("#view").addEventListener("click", (e) => {
     case "project-star": { const p = find(S.projects); p.featured = !p.featured; touch(); return paint(); }
     case "project-vis": { const p = find(S.projects); p.visible = p.visible === false; touch(); return paint(); }
     case "project-del": if (confirmDel("este trabajo")) { S.projects = S.projects.filter((p) => p.id !== id); touch(); go("projects"); } return;
+    case "testi-new": return openTestimonialForm();
+    case "testi-edit": return openTestimonialForm(id);
+    case "testi-star": { const t = find(S.testimonials); t.featured = !t.featured; touch(); return paint(); }
+    case "testi-vis": { const t = find(S.testimonials); t.visible = t.visible === false; touch(); return paint(); }
+    case "testi-del": if (confirmDel("este testimonio")) { S.testimonials = S.testimonials.filter((t) => t.id !== id); touch(); go("testimonials"); } return;
+    case "pending-open": return openTestimonialForm(null, pending.find((p) => p.id === id));
+    case "pending-del": if (confirm("¿Descartar este mensaje? No se publicará.")) { api(`/api/pending/${id}`, { method: "DELETE" }).then(() => { pending = pending.filter((p) => p.id !== id); go("testimonials"); }).catch((e) => toast(e.message, true)); } return;
+    case "copy-link": return navigator.clipboard?.writeText(`${location.origin}/#testimonio`).then(() => toast("Enlace copiado. Envíaselo a tus clientes."), () => toast("No pude copiar el enlace", true));
     case "month-new": return openMonthForm();
     case "month-edit": return openMonthForm(id);
     case "month-del": if (confirmDel("este mes")) { S.months = S.months.filter((m) => m.id !== id); touch(); go("months"); } return;

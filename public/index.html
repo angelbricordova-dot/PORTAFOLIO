@@ -30,6 +30,7 @@
       </a>
       <nav class="nav__links" id="navLinks" aria-label="Principal">
         <a href="#trabajos">Trabajos</a>
+        <a href="#testimonios" id="navTesti" hidden>Testimonios</a>
         <a href="#trayectoria">Trayectoria</a>
         <a href="#servicios">Servicios</a>
         <a href="#contacto">Contacto</a>
@@ -88,6 +89,19 @@
       <div class="work" id="work" aria-live="polite">
         <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
       </div>
+    </section>
+
+    <!-- TESTIMONIOS -->
+    <section class="section" id="testimonios" hidden>
+      <div class="section__head">
+        <h2 class="h2">Lo que dicen mis clientes</h2>
+        <div class="carousel-nav">
+          <button class="icon-btn" id="tPrev" type="button" aria-label="Anterior"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-left"></use></svg></button>
+          <button class="icon-btn" id="tNext" type="button" aria-label="Siguiente"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-right"></use></svg></button>
+        </div>
+      </div>
+      <div class="testi" id="testi" role="list" tabindex="0" aria-label="Testimonios"></div>
+      <p class="testi__cta"><button class="linkbtn" type="button" data-open-testimonial>¿Trabajamos juntos? Deja tu testimonio</button></p>
     </section>
 
     <!-- TRAYECTORIA -->
@@ -173,6 +187,33 @@
   <dialog class="viewer" id="viewer" aria-label="Detalle del trabajo">
     <button class="viewer__close" id="viewerClose" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#x"></use></svg></button>
     <div class="viewer__body" id="viewerBody"></div>
+  </dialog>
+
+  <dialog class="tform" id="tform" aria-label="Dejar un testimonio">
+    <form id="tformForm" novalidate>
+      <div class="tform__head"><h3 class="h3">Deja tu testimonio</h3><button class="viewer__close" type="button" data-tclose aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#x"></use></svg></button></div>
+      <p class="muted-text">Cuéntame cómo fue trabajar juntos. Lo reviso y lo publico en la página.</p>
+      <p class="sr-only" hidden><label>No llenar: <input name="website" tabindex="-1" autocomplete="off"></label></p>
+      <div class="field"><label for="t-name">Tu nombre</label><input id="t-name" name="name" maxlength="80" autocomplete="name" required></div>
+      <div class="field"><label for="t-role">Tu cargo o marca (opcional)</label><input id="t-role" name="role" maxlength="100" autocomplete="organization-title"></div>
+      <fieldset class="field rating"><legend>Valoración</legend>
+        <div class="rating__row">
+          <input type="radio" name="rating" id="r5" value="5" checked><label for="r5" title="5 estrellas"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#star-fill"></use></svg><span class="sr-only">5 estrellas</span></label>
+          <input type="radio" name="rating" id="r4" value="4"><label for="r4" title="4 estrellas"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#star-fill"></use></svg><span class="sr-only">4 estrellas</span></label>
+          <input type="radio" name="rating" id="r3" value="3"><label for="r3" title="3 estrellas"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#star-fill"></use></svg><span class="sr-only">3 estrellas</span></label>
+          <input type="radio" name="rating" id="r2" value="2"><label for="r2" title="2 estrellas"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#star-fill"></use></svg><span class="sr-only">2 estrellas</span></label>
+          <input type="radio" name="rating" id="r1" value="1"><label for="r1" title="1 estrella"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#star-fill"></use></svg><span class="sr-only">1 estrella</span></label>
+        </div>
+      </fieldset>
+      <div class="field"><label for="t-msg">Tu testimonio</label><textarea id="t-msg" name="message" rows="5" maxlength="700" required></textarea><span class="help">Entre 10 y 700 caracteres.</span></div>
+      <button class="btn btn--accent" type="submit" id="tBtn">Enviar testimonio</button>
+      <p class="form__msg" id="tMsg" role="status"></p>
+    </form>
+  </dialog>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Testimonio">
+    <button class="viewer__close" id="lbClose" type="button" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#x"></use></svg></button>
+    <div class="lightbox__body" id="lbBody"></div>
   </dialog>
 
   <script type="module" src="/assets/js/site.js"></script>

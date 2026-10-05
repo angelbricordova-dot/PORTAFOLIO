@@ -78,7 +78,7 @@ export function normalize(site) {
   site.profile = { years: 8, photo: "", logo: "", ...(site.profile || {}) };
   site.profile.roles ||= [];
   site.profile.socials ||= {};
-  for (const key of ["services", "categories", "clients", "projects", "months"]) site[key] ||= [];
+  for (const key of ["services", "categories", "clients", "projects", "months", "testimonials"]) site[key] ||= [];
   site.settings ||= {};
   return site;
 }
@@ -109,6 +109,7 @@ export function parseMedia(url) {
     const id = u.pathname.match(/\/d\/([\w-]+)/)?.[1] || u.searchParams.get("id");
     if (id) return { type: "embed", provider: "drive", src: `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`, thumb: "", url: src };
   }
+  if (/\.(mp3|m4a|aac|ogg|opus|wav|weba)(\?|$)/i.test(u.pathname)) return { type: "audio", src, thumb: "", url: src };
   if (/\.(mp4|webm|mov)(\?|$)/i.test(u.pathname)) return { type: "video", src, thumb: "", url: src };
   if (/\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(u.pathname) || u.pathname.startsWith("/media/")) {
     return { type: /\.(mp4|webm)$/i.test(u.pathname) ? "video" : "image", src, thumb: src, url: src };

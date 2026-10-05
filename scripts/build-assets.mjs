@@ -14,7 +14,7 @@ calendar-blank users chart-bar sparkle lock-simple sign-out floppy-disk eye eye-
 tiktok-logo linkedin-logo envelope-simple whatsapp-logo star check warning film-strip paint-brush megaphone chats-circle lightbulb
 compass list magnifying-glass copy house gear folder tag arrow-counter-clockwise caret-down caret-left caret-right monitor-play
 palette users-three trend-up rocket heart cloud-arrow-up check-circle info clock-counter-clockwise note-pencil magic-wand
-file-arrow-down file-arrow-up globe trophy target arrow-up x-logo behance-logo facebook-logo threads-logo twitch-logo star-four asterisk sun moon`.split(/\s+/);
+file-arrow-down file-arrow-up globe trophy target arrow-up x-logo behance-logo facebook-logo threads-logo twitch-logo star-four asterisk sun moon microphone quotes pause chat-circle-text seal-check`.split(/\s+/);
 
 const symbols = [];
 for (const name of icons) {
