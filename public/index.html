@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Lamont — Editor, diseñador y estratega de contenido</title>
   <meta name="description" content="Portafolio de Alejandro Gabriel Lamont Bencomo (Lamont): edición de video, diseño gráfico, social media, community management, YouTube y dirección creativa.">
-  <meta name="theme-color" content="#f0f1f4">
+  <meta name="theme-color" content="#eaf0f8">
   <meta property="og:title" content="Lamont — Editor, diseñador y estratega de contenido">
   <meta property="og:description" content="Edición de video, diseño, redes y estrategia de contenido. Mira mis trabajos y mi trayectoria mes a mes.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="/assets/img/lamont-head.png">
+  <meta property="og:image" content="/assets/img/lamont.webp">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png">
   <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/syne.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/site.css">
 </head>
@@ -22,7 +23,7 @@
   <header class="nav" id="nav">
     <div class="nav__in">
       <a class="brand" href="#top" aria-label="Lamont, inicio">
-        <img src="/assets/img/lamont-head.webp" alt="" width="36" height="36">
+        <img class="js-logo" src="/assets/img/logo.webp" alt="" width="36" height="36">
         <span>Lamont</span>
       </a>
       <nav class="nav__links" id="navLinks" aria-label="Principal">
@@ -40,35 +41,33 @@
 
   <main id="top">
     <!-- HERO -->
-    <section class="hero">
-      <div class="hero__copy">
-        <p class="hero__who"><img src="/assets/img/lamont-head.webp" alt="" width="28" height="28"><span id="heroWho">Alejandro Gabriel Lamont Bencomo</span></p>
+    <section class="hero" id="hero">
+      <div class="hero__head">
+        <p class="hero__who"><img class="js-logo" src="/assets/img/logo.webp" alt="" width="28" height="28"><span id="heroWho">Alejandro Gabriel Lamont Bencomo</span></p>
         <h1 class="hero__title" id="heroTitle">Edito, diseño y dirijo contenido que engancha.</h1>
-        <p class="hero__intro" id="heroIntro">Editor de video, diseñador y estratega de contenido para marcas y creadores. Del guion a la publicación.</p>
-        <div class="hero__cta">
-          <a class="btn btn--accent" href="#trabajos">Ver trabajos <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-up-right"></use></svg></a>
-          <a class="btn btn--ghost" href="#contacto">Hablemos</a>
-        </div>
       </div>
 
-      <div class="stage" id="stage" role="img" aria-label="Personaje 3D de Lamont que gira siguiendo el cursor">
-        <span class="stage__word" aria-hidden="true">LAMONT</span>
-        <div class="stage__frames" id="frames">
-          <img data-frame="front" src="/assets/img/lamont-front.webp" alt="" width="530" height="648" fetchpriority="high">
-          <img data-frame="q-front" src="/assets/img/lamont-q-front.webp" alt="" width="530" height="648">
-          <img data-frame="side" src="/assets/img/lamont-side.webp" alt="" width="530" height="648">
-          <img data-frame="q-back" src="/assets/img/lamont-q-back.webp" alt="" width="530" height="648">
-          <img data-frame="back" src="/assets/img/lamont-back.webp" alt="" width="530" height="648">
+      <p class="hero__intro" id="heroIntro">Editor de video, diseñador y estratega de contenido con más de 8 años trabajando con marcas y creadores.</p>
+
+      <figure class="portrait" id="portrait" data-cursor="Hola">
+        <span class="portrait__word" aria-hidden="true">LAMONT</span>
+        <div class="portrait__frame">
+          <img id="heroPhoto" src="/assets/img/lamont.webp" alt="Retrato de Lamont" width="720" height="861" fetchpriority="high">
         </div>
-        <span class="sticker sticker--a">Edición</span>
-        <span class="sticker sticker--b">Diseño</span>
-        <span class="sticker sticker--c">Estrategia</span>
-        <p class="stage__hint" id="stageHint"><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-counter-clockwise"></use></svg> Toca para girarme</p>
+        <span class="sticker sticker--a" data-sticker>Edición</span>
+        <span class="sticker sticker--b" data-sticker>Diseño</span>
+        <span class="sticker sticker--c" data-sticker>Estrategia</span>
+        <div class="badge" id="badge"><b id="badgeNum">+8</b><span>años creando contenido</span></div>
+      </figure>
+
+      <div class="hero__cta">
+        <a class="btn btn--accent" href="#trabajos">Ver trabajos <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-up-right"></use></svg></a>
+        <a class="btn btn--ghost" href="#contacto">Hablemos</a>
       </div>
     </section>
 
-    <!-- ROLES -->
-    <div class="roles" aria-label="Roles">
+    <!-- ROLES: se puede arrastrar; al pasar el cursor solo va más lento -->
+    <div class="roles" id="roles" data-cursor="Arrastra" aria-label="Roles">
       <div class="roles__track" id="rolesTrack"></div>
     </div>
 
@@ -130,6 +129,7 @@
         <h2 class="h2 h2--xl">Cuéntame tu proyecto.</h2>
         <p class="lead" id="availability">Abierto a nuevos proyectos</p>
         <ul class="contact__links" id="contactLinks"></ul>
+        <div class="socials" id="socials" aria-label="Redes sociales"></div>
       </div>
       <form class="form" name="contacto" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
         <input type="hidden" name="form-name" value="contacto">
@@ -155,8 +155,9 @@
 
   <footer class="foot">
     <div class="foot__in">
-      <a class="brand" href="#top"><img src="/assets/img/lamont-head.webp" alt="" width="36" height="36"><span>Lamont</span></a>
+      <a class="brand" href="#top"><img class="js-logo" src="/assets/img/logo.webp" alt="" width="36" height="36"><span>Lamont</span></a>
       <p id="footName">Alejandro Gabriel Lamont Bencomo</p>
+      <div class="socials socials--mini" id="footSocials"></div>
       <a class="foot__admin" href="/admin">Panel</a>
     </div>
   </footer>

@@ -1,4 +1,4 @@
-import { esc, safeUrl, icon, uid, slug, loadSite, normalize, parseMedia, coverOf, analyze, monthSummary, monthLong, monthName, cap, thisMonth, DELIVERABLES } from "./common.js";
+import { esc, safeUrl, icon, SOCIALS, uid, slug, loadSite, normalize, parseMedia, coverOf, analyze, monthSummary, monthLong, monthName, cap, thisMonth, DELIVERABLES } from "./common.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const TOKEN_KEY = "lamont_admin_token";
@@ -75,6 +75,7 @@ async function start() {
   } else safe(() => localStorage.removeItem(DRAFT_KEY));
   $("#login").hidden = true;
   $("#app").hidden = false;
+  applyLogo();
   go(view);
   setStatus();
 }
@@ -129,6 +130,11 @@ const VIEWS = {
   categories: ["Categorías", "tag"],
   backup: ["Respaldo", "floppy-disk"],
 };
+
+function applyLogo() {
+  const url = safeUrl(S?.profile?.logo) || "/assets/img/logo.webp";
+  document.querySelectorAll(".js-logo").forEach((img) => { img.src = url; });
+}
 
 function go(name) {
   view = name;
@@ -448,12 +454,26 @@ function openClientForm(id) {
 /* ============ Perfil, servicios y categorías (edición directa) ============ */
 const bind = (path, value, extra = "") => `data-bind="${path}" ${extra} value="${esc(value)}"`;
 
+function imageField(key, label, help, shape) {
+  const url = S.profile[key];
+  return `<div class="field"><span class="label">${esc(label)}</span>
+    <div class="toolbar"><div class="thumb ${shape}" id="prev-${key}">${url ? `<img src="${esc(url)}" alt="">` : icon("image")}</div>
+      <label class="btn btn--sm btn--ghost" for="up-${key}">${icon("upload-simple")} Subir imagen</label><input id="up-${key}" type="file" accept="image/*" data-upload="${key}" hidden>
+      <button type="button" class="btn btn--sm btn--ghost" data-act="clear-img" data-key="${key}">Usar la original</button></div>
+    <span class="help">${esc(help)}</span></div>`;
+}
+
 function viewProfile() {
   const p = S.profile;
   return `
+    <section class="panel"><h2>Imágenes</h2>
+      ${imageField("photo", "Foto principal (centro de la portada)", "Mejor vertical, con tu cara en el tercio superior. Si no subes ninguna, se usa la foto original.", "thumb--photo")}
+      ${imageField("logo", "Logo (esquina superior izquierda)", "Se recorta en círculo. Una imagen cuadrada con tu cara centrada queda mejor.", "thumb--round")}
+    </section>
     <section class="panel"><h2>Quién eres</h2>
       <div class="row"><div class="field"><label for="p-name">Nombre completo</label><input id="p-name" ${bind("profile.name", p.name)}></div>
-        <div class="field"><label for="p-alias">Cómo te conocen</label><input id="p-alias" ${bind("profile.alias", p.alias)}></div></div>
+        <div class="field"><label for="p-alias">Cómo te conocen</label><input id="p-alias" ${bind("profile.alias", p.alias)}></div>
+        <div class="field"><label for="p-years">Años de experiencia</label><input id="p-years" type="number" min="0" max="60" inputmode="numeric" data-bind="profile.years" data-num="1" value="${esc(p.years ?? 8)}"><span class="help">Sale como «+${esc(p.years ?? 8)}» en la portada. Pon 0 para ocultarlo.</span></div></div>
       <div class="field"><label for="p-tag">Titular de la portada</label><input id="p-tag" maxlength="80" ${bind("profile.tagline", p.tagline)}><span class="help">Una frase corta. Ideal: dos líneas.</span></div>
       <div class="field"><label for="p-intro">Subtítulo</label><textarea id="p-intro" rows="2" maxlength="160" data-bind="profile.intro">${esc(p.intro)}</textarea><span class="help">Máximo 20 palabras se ven mejor.</span></div>
       <div class="field"><label for="p-bio">Sobre ti</label><textarea id="p-bio" rows="4" data-bind="profile.bio">${esc(p.bio)}</textarea></div>
@@ -462,8 +482,10 @@ function viewProfile() {
     <section class="panel"><h2>Contacto y redes</h2>
       <div class="row"><div class="field"><label for="p-mail">Correo</label><input id="p-mail" type="email" ${bind("profile.email", p.email)}></div>
         <div class="field"><label for="p-wa">WhatsApp (con código de país)</label><input id="p-wa" inputmode="tel" placeholder="584121234567" ${bind("profile.whatsapp", p.whatsapp)}></div></div>
-      <div class="row">${["instagram", "youtube", "tiktok", "linkedin"].map((k) => `<div class="field"><label for="p-${k}">${cap(k)}</label><input id="p-${k}" placeholder="@usuario o enlace" ${bind(`profile.socials.${k}`, p.socials?.[k] || "")}></div>`).join("")}</div>
       <div class="field"><label for="p-av">Mensaje de disponibilidad</label><input id="p-av" ${bind("profile.availability", p.availability || "")}></div>
+      <h2 style="margin-top:8px">Redes sociales</h2>
+      <p class="help">Escribe tu usuario (@lamont) o pega el enlace completo. Las que llenes aparecen en Contacto y en el pie de página; las vacías no se muestran.</p>
+      <div class="row">${SOCIALS.map((n) => `<div class="field"><label for="p-${n.key}">${esc(n.label)}</label><input id="p-${n.key}" placeholder="@usuario o enlace" ${bind(`profile.socials.${n.key}`, p.socials?.[n.key] || "")}></div>`).join("")}</div>
     </section>`;
 }
 
@@ -582,6 +604,7 @@ $("#view").addEventListener("click", (e) => {
       return;
     }
     case "copy-analysis": return navigator.clipboard?.writeText(analyze(S).narrative.join("\n\n")).then(() => toast("Análisis copiado"), () => toast("No pude copiar", true));
+    case "clear-img": S.profile[b.dataset.key] = ""; touch(); applyLogo(); return paint();
     case "export": return exportData();
     case "reload": if (!dirty || confirm("Se perderán los cambios sin publicar. ¿Continuar?")) { safe(() => localStorage.removeItem(DRAFT_KEY)); dirty = false; loadSite().then((s) => { S = normalize(s); go(view); setStatus(); toast("Recargado desde lo publicado"); }); } return;
     case "clear-demo": {
@@ -606,6 +629,7 @@ $("#view").addEventListener("input", (e) => {
   if (!path) return;
   let value = t.type === "radio" ? t.value : t.value;
   if (t.dataset.list === "lines") value = value.split("\n").map((s) => s.trim()).filter(Boolean);
+  if (t.dataset.num) value = Math.max(0, Number(value) || 0);
   const keys = path.split(".");
   let target = S;
   for (const k of keys.slice(0, -1)) target = target[k];
@@ -616,6 +640,15 @@ $("#view").addEventListener("input", (e) => {
 $("#view").addEventListener("change", (e) => { if (e.target.dataset.filter === "cat") { filters.cat = e.target.value; paint(); } });
 
 $("#view").addEventListener("change", async (e) => {
+  const key = e.target.dataset?.upload;
+  if (key && e.target.files[0]) {
+    try {
+      S.profile[key] = await uploadFile(e.target.files[0]);
+      $(`#prev-${key}`).innerHTML = `<img src="${esc(S.profile[key])}" alt="">`;
+      touch(); applyLogo(); toast("Imagen lista. Publica los cambios para verla en el sitio.");
+    } catch (err) { toast(err.message, true); }
+    return;
+  }
   if (e.target.id !== "importIn" || !e.target.files[0]) return;
   try {
     const doc = JSON.parse(await e.target.files[0].text());

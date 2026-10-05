@@ -25,7 +25,7 @@ El formulario de contacto usa Netlify Forms. Los mensajes llegan en **Forms** de
 
 - **Trabajos**: título, cliente, categoría, mes, descripción y etiquetas. Sube imágenes (se optimizan solas a WebP) o pega enlaces de YouTube, Vimeo, Drive o `.mp4`. Puedes elegir la portada, ordenar los medios, destacar un trabajo (tarjeta grande) u ocultarlo.
 - **Bitácora mensual**: por cada mes anota clientes, entregas (videos, diseños, publicaciones, campañas), logro y notas privadas. El sitio calcula solo las cifras, la gráfica de actividad, los clientes más constantes, la racha y un texto de análisis. «Generar resumen» crea el texto del mes.
-- **Clientes, Perfil, Servicios, Categorías**: todo lo que se ve en el sitio se edita aquí.
+- **Clientes, Perfil, Servicios, Categorías**: todo lo que se ve en el sitio se edita aquí. En Perfil también están los años de experiencia («+8»), las fotos y las redes sociales (Instagram, TikTok, YouTube, LinkedIn, Behance, X, Threads, Facebook y Twitch).
 - **Respaldo**: descarga e importa un `.json` con todos tus datos.
 - Los cambios no se ven en el sitio hasta que pulsas **Publicar cambios** (o `Ctrl/Cmd + S`). Si cierras la pestaña sin publicar, el borrador se recupera al volver.
 
@@ -44,10 +44,8 @@ npm run dev          # http://localhost:8888  ·  panel en /admin  ·  clave loc
 
 Los datos locales se guardan en `.data/` (no se sube a Git). Define `ADMIN_PASSWORD` para usar otra clave.
 
-## Regenerar el personaje 3D
+## Cambiar fotos y logo
 
-```bash
-pip install pillow numpy scipy
-python3 scripts/make-avatar.py ruta/a/la-hoja-de-personaje.png   # recorta las 5 vistas y la cabeza
-npm run assets                                                     # fuentes e iconos
-```
+Desde el panel, en **Perfil y contacto → Imágenes**: sube la foto principal (centro de la portada) y el logo (esquina superior izquierda). «Usar la original» vuelve a las imágenes que vienen en el proyecto (`public/assets/img/lamont.webp` y `logo.webp`).
+
+Si cambias fuentes o iconos del sitio: `npm run assets` regenera `public/assets/fonts` e `icons.svg`.

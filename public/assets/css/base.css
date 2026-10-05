@@ -1,19 +1,22 @@
 /* Tokens, fuentes y piezas comunes del sitio y del panel. */
 @font-face { font-family: "Bricolage"; src: url("/assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
 @font-face { font-family: "Geist"; src: url("/assets/fonts/geist.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Syne"; src: url("/assets/fonts/syne.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
 @font-face { font-family: "Geist Mono"; src: url("/assets/fonts/geist-mono.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
 :root {
-  /* Una sola paleta: gris frío claro + tinta + naranja (acento único). */
-  --bg: #f0f1f4;
+  /* Una sola paleta: azul marino profundo (base) + dorado (acento único). */
+  --bg: #eaf0f8;
   --surface: #ffffff;
-  --ink: #0b0c0f;
-  --ink-2: #1a1c22;
-  --muted: #565b68;
-  --line: rgba(11, 12, 15, 0.12);
-  --accent: #ff4d1c;
-  --accent-ink: #0b0c0f;
-  --accent-soft: #ffe3d9;
+  --ink: #0a1a3f;
+  --ink-2: #14274f;
+  --navy-deep: #061029;
+  --muted: #4b5a7a;
+  --line: rgba(10, 26, 63, 0.14);
+  --accent: #ffc53d;
+  --accent-ink: #0a1a3f;
+  --accent-soft: #fff0c9;
+  --blue-soft: #dce6f7;
   --ok: #17794a;
   --danger: #c4261d;
 
@@ -25,10 +28,11 @@
   --font-display: "Bricolage", "Geist", system-ui, sans-serif;
   --font-body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-ticker: "Syne", "Bricolage", system-ui, sans-serif;
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
-  --shadow: 0 1px 0 rgba(11, 12, 15, 0.04), 0 18px 40px -22px rgba(30, 24, 20, 0.35);
+  --shadow: 0 1px 0 rgba(10, 26, 63, 0.05), 0 18px 40px -22px rgba(8, 20, 50, 0.45);
   --wrap: 1280px;
   --gutter: clamp(16px, 4vw, 40px);
 }

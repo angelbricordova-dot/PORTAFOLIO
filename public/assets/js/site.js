@@ -1,4 +1,5 @@
-import { esc, safeUrl, icon, loadSite, normalize, parseMedia, coverOf, analyze, monthSummary, monthLong, monthName, monthsBetween, cap, DELIVERABLES } from "./common.js";
+import { initCursor, initMagnets, initHero, initTicker, setCursorEnabled } from "./fx.js";
+import { esc, safeUrl, icon, SOCIALS, socialUrl, loadSite, normalize, parseMedia, coverOf, analyze, monthSummary, monthLong, monthName, monthsBetween, cap, DELIVERABLES } from "./common.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -15,9 +16,11 @@ async function boot() {
   renderServices();
   renderClients();
   renderContact();
-  initAvatar();
   initChrome();
   watchReveals();
+  initHero();
+  initCursor();
+  initMagnets();
   const hash = location.hash.match(/^#trabajo-(.+)$/);
   if (hash) openProject(hash[1]);
 }
@@ -28,6 +31,13 @@ function renderHero() {
   $("#heroTitle").textContent = p.tagline || "";
   $("#heroIntro").textContent = p.intro || "";
   $("#heroWho").textContent = p.name || "Lamont";
+  const photo = safeUrl(p.photo);
+  if (photo) $("#heroPhoto").src = photo;
+  const logo = safeUrl(p.logo);
+  if (logo) document.querySelectorAll(".js-logo").forEach((img) => { img.src = logo; });
+  const years = Number(p.years) || 0;
+  $("#badge").hidden = !years;
+  $("#badgeNum").textContent = `+${years}`;
   $("#footName").textContent = `${p.name || "Lamont"} · ${new Date().getFullYear()}`;
   const alias = p.alias || "Lamont";
   document.title = `${alias} — ${p.roles?.slice(0, 3).join(", ") || "Portafolio"}`;
@@ -36,55 +46,10 @@ function renderHero() {
 
 function renderRoles() {
   const roles = site.profile.roles.filter(Boolean);
-  const track = $("#rolesTrack");
-  if (!roles.length) return track.parentElement.remove();
-  const set = roles.map((r) => `<span class="roles__item"><span>${esc(r)}</span><i></i></span>`).join("");
-  track.innerHTML = set + set; // se repite para que el bucle no tenga salto
-}
-
-/* ---------- Personaje 3D que gira ---------- */
-function initAvatar() {
-  const stage = $("#stage");
-  const imgs = Object.fromEntries([...stage.querySelectorAll("img")].map((i) => [i.dataset.frame, i]));
-  const hint = $("#stageHint");
-  let current = null, spinning = false, idle;
-  stage.classList.add("is-bob");
-
-  // q-front y q-back miran a la izquierda de la pantalla, side a la derecha.
-  const show = (name, flip = false) => {
-    const key = `${name}${flip}`;
-    if (key === current) return;
-    current = key;
-    for (const [n, el] of Object.entries(imgs)) {
-      const on = n === name;
-      el.classList.toggle("is-on", on);
-      el.classList.toggle("flip", on && flip);
-    }
-  };
-  show("front");
-
-  const follow = (clientX) => {
-    const r = stage.getBoundingClientRect();
-    const dx = ((clientX - r.left) / r.width - 0.5) * 2;
-    const a = Math.abs(dx), left = dx < 0;
-    if (a < 0.2) show("front");
-    else if (a < 0.62) show("q-front", !left);
-    else show("side", left);
-  };
-  const touch = () => { hint.classList.add("is-gone"); stage.classList.remove("is-bob"); clearTimeout(idle); };
-  const rest = () => { idle = setTimeout(() => { if (!spinning) { show("front"); stage.classList.add("is-bob"); } }, 900); };
-
-  stage.addEventListener("pointermove", (e) => { if (spinning) return; touch(); follow(e.clientX); });
-  stage.addEventListener("pointerleave", rest);
-  stage.addEventListener("click", () => {
-    if (spinning) return;
-    spinning = true; touch();
-    const turn = [["front"], ["q-front"], ["side", true], ["q-back"], ["back"], ["q-back", true], ["side"], ["q-front", true], ["front"]];
-    turn.forEach(([n, f], i) => setTimeout(() => {
-      show(n, !!f);
-      if (i === turn.length - 1) { spinning = false; rest(); }
-    }, reduceMotion ? 0 : i * 85));
-  });
+  const host = $("#roles");
+  if (!roles.length) return host.remove();
+  // se espera a la tipografía para medir bien el ancho del bucle
+  (document.fonts?.ready ?? Promise.resolve()).then(() => initTicker(host, $("#rolesTrack"), roles.map(esc)));
 }
 
 /* ---------- Trabajos ---------- */
@@ -182,7 +147,7 @@ function openProject(id) {
   items = (current.media || []).map((m) => ({ ...parseMedia(m.url), caption: m.caption })).filter((m) => m.src);
   idx = 0;
   paintViewer();
-  if (!viewer.open) viewer.showModal();
+  if (!viewer.open) { viewer.showModal(); setCursorEnabled(false); }
   history.replaceState(null, "", `#trabajo-${id}`);
 }
 
@@ -215,7 +180,7 @@ function paintViewer() {
 
 $("#viewerClose").addEventListener("click", () => viewer.close());
 viewer.addEventListener("click", (e) => { if (e.target === viewer) viewer.close(); });
-viewer.addEventListener("close", () => { $("#viewerBody").innerHTML = ""; history.replaceState(null, "", location.pathname + location.search); });
+viewer.addEventListener("close", () => { setCursorEnabled(true); $("#viewerBody").innerHTML = ""; history.replaceState(null, "", location.pathname + location.search); });
 viewer.addEventListener("keydown", (e) => {
   if (items.length < 2) return;
   if (e.key === "ArrowRight") { idx = (idx + 1) % items.length; paintViewer(); }
@@ -232,13 +197,14 @@ function renderJourney() {
     return;
   }
 
+  const years = Number(site.profile.years) || 0;
   const stats = [
-    [a.clients, "clientes"],
-    [a.activeMonths, a.activeMonths === 1 ? "mes activo" : "meses activos"],
-    a.deliveredTotal > 0 ? [a.deliveredTotal, "entregas registradas"] : [a.projects, "proyectos publicados"],
-    a.clients > 1 ? [a.retention, "de clientes repiten", "%"] : [a.streak ?? 1, "meses seguidos"],
+    years ? [years, "años creando contenido", "+"] : [a.projects, "proyectos publicados", ""],
+    [a.clients, "clientes", ""],
+    [a.activeMonths, a.activeMonths === 1 ? "mes activo en el registro" : "meses activos en el registro", ""],
+    a.deliveredTotal > 0 ? [a.deliveredTotal, "entregas registradas", ""] : [a.projects, "proyectos publicados", ""],
   ];
-  $("#stats").innerHTML = stats.map(([n, label, suffix = ""]) => `<div class="stat"><b data-count="${n}" data-suffix="${suffix}">${n}${suffix}</b><span>${esc(label)}</span></div>`).join("");
+  $("#stats").innerHTML = stats.map(([n, label, prefix]) => `<div class="stat"><b data-count="${n}" data-prefix="${prefix}">${prefix}${n}</b><span>${esc(label)}</span></div>`).join("");
 
   $("#read").innerHTML =
     a.narrative.map((t) => `<p>${esc(t)}</p>`).join("") +
@@ -306,10 +272,10 @@ function countUp() {
     const end = Number(en.target.dataset.count), t0 = performance.now(), dur = 1100;
     const tick = (t) => {
       const k = Math.min(1, (t - t0) / dur);
-      en.target.textContent = Math.round(end * (1 - Math.pow(1 - k, 4))) + (en.target.dataset.suffix || "");
+      en.target.textContent = (en.target.dataset.prefix || "") + Math.round(end * (1 - Math.pow(1 - k, 4)));
       if (k < 1) requestAnimationFrame(tick);
     };
-    en.target.textContent = "0" + (en.target.dataset.suffix || "");
+    en.target.textContent = (en.target.dataset.prefix || "") + "0";
     requestAnimationFrame(tick);
   }), { threshold: 0.6 });
   els.forEach((el) => io.observe(el));
@@ -359,14 +325,6 @@ function renderClients() {
 }
 
 /* ---------- Contacto ---------- */
-function socialUrl(kind, v) {
-  v = String(v || "").trim();
-  if (!v) return "";
-  if (/^https?:\/\//i.test(v)) return safeUrl(v);
-  const h = v.replace(/^@/, "");
-  return { instagram: `https://instagram.com/${h}`, youtube: `https://youtube.com/@${h}`, tiktok: `https://tiktok.com/@${h}`, linkedin: `https://linkedin.com/in/${h}` }[kind] || "";
-}
-
 function renderContact() {
   const p = site.profile;
   $("#availability").textContent = p.availability || "";
@@ -374,12 +332,11 @@ function renderContact() {
   if (p.email) links.push([`mailto:${p.email}`, "envelope-simple", p.email]);
   const wa = String(p.whatsapp || "").replace(/\D/g, "");
   if (wa) links.push([`https://wa.me/${wa}`, "whatsapp-logo", "WhatsApp"]);
-  const labels = { instagram: ["instagram-logo", "Instagram"], youtube: ["youtube-logo", "YouTube"], tiktok: ["tiktok-logo", "TikTok"], linkedin: ["linkedin-logo", "LinkedIn"] };
-  for (const [k, [ico, label]] of Object.entries(labels)) {
-    const url = socialUrl(k, p.socials[k]);
-    if (url) links.push([url, ico, label]);
-  }
+  const nets = SOCIALS.map((n) => ({ ...n, href: socialUrl(n, p.socials[n.key]) })).filter((n) => n.href);
   $("#contactLinks").innerHTML = links.map(([href, ico, label]) => `<li><a href="${esc(href)}" ${href.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>${icon(ico)} ${esc(label)} ${icon("arrow-up-right", "go")}</a></li>`).join("");
+  const pills = nets.map((n) => `<a href="${esc(n.href)}" target="_blank" rel="noopener" aria-label="${esc(n.label)}">${icon(n.icon)}<span>${esc(n.label)}</span></a>`).join("");
+  $("#socials").innerHTML = pills;
+  $("#footSocials").innerHTML = pills;
 
   const form = $("#contactForm"), msg = $("#formMsg"), btn = $("#formBtn");
   form.addEventListener("submit", async (e) => {

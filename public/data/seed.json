@@ -3,52 +3,324 @@
     "name": "Alejandro Gabriel Lamont Bencomo",
     "alias": "Lamont",
     "tagline": "Edito, diseño y dirijo contenido que engancha.",
-    "intro": "Editor de video, diseñador y estratega de contenido para marcas y creadores. Del guion a la publicación.",
-    "bio": "Soy Alejandro Gabriel Lamont Bencomo, pero en redes soy Lamont. Trabajo donde se cruzan la edición, el diseño y la estrategia: edito videos, diseño piezas, manejo redes y comunidades, y dirijo la línea creativa para que todo cuente la misma historia.",
-    "roles": ["Editor de video", "Social Media Manager", "Diseñador gráfico", "Community Manager", "YouTube Strategist", "Content Strategist", "Director Creativo"],
+    "intro": "Editor de video, diseñador y estratega de contenido con más de 8 años trabajando con marcas y creadores.",
+    "bio": "Soy Alejandro Gabriel Lamont Bencomo, pero en redes soy Lamont. Llevo más de 8 años trabajando donde se cruzan la edición, el diseño y la estrategia: edito videos, diseño piezas, manejo redes y comunidades, y dirijo la línea creativa para que todo cuente la misma historia.",
+    "roles": [
+      "Editor de video",
+      "Social Media Manager",
+      "Diseñador gráfico",
+      "Community Manager",
+      "YouTube Strategist",
+      "Content Strategist",
+      "Director Creativo"
+    ],
     "location": "",
     "email": "",
     "whatsapp": "",
-    "socials": { "instagram": "", "youtube": "", "tiktok": "", "linkedin": "" },
-    "availability": "Abierto a nuevos proyectos"
+    "socials": {
+      "instagram": "",
+      "tiktok": "",
+      "youtube": "",
+      "linkedin": "",
+      "behance": "",
+      "x": "",
+      "threads": "",
+      "facebook": "",
+      "twitch": ""
+    },
+    "availability": "Abierto a nuevos proyectos",
+    "years": 8,
+    "photo": "",
+    "logo": ""
   },
   "services": [
-    { "id": "s1", "icon": "film-strip", "title": "Edición de video", "desc": "Reels, videos largos y piezas para YouTube con ritmo, sonido y narrativa pensados para retener." },
-    { "id": "s2", "icon": "paint-brush", "title": "Diseño gráfico", "desc": "Piezas, identidad visual y materiales para redes que se reconocen en un scroll." },
-    { "id": "s3", "icon": "megaphone", "title": "Social Media Manager", "desc": "Calendario, publicación y seguimiento para mantener la marca activa y coherente." },
-    { "id": "s4", "icon": "chats-circle", "title": "Community Manager", "desc": "Conversación, respuestas y comunidad: la cara de la marca en el día a día." },
-    { "id": "s5", "icon": "monitor-play", "title": "YouTube Strategist", "desc": "Ideas, títulos, miniaturas y estructura para hacer crecer un canal con intención." },
-    { "id": "s6", "icon": "target", "title": "Content Strategist", "desc": "Qué decir, dónde y cuándo: líneas de contenido alineadas a objetivos." },
-    { "id": "s7", "icon": "sparkle", "title": "Director Creativo", "desc": "Concepto, guía visual y dirección del equipo para que todo cuente la misma historia." }
+    {
+      "id": "s1",
+      "icon": "film-strip",
+      "title": "Edición de video",
+      "desc": "Reels, videos largos y piezas para YouTube con ritmo, sonido y narrativa pensados para retener."
+    },
+    {
+      "id": "s2",
+      "icon": "paint-brush",
+      "title": "Diseño gráfico",
+      "desc": "Piezas, identidad visual y materiales para redes que se reconocen en un scroll."
+    },
+    {
+      "id": "s3",
+      "icon": "megaphone",
+      "title": "Social Media Manager",
+      "desc": "Calendario, publicación y seguimiento para mantener la marca activa y coherente."
+    },
+    {
+      "id": "s4",
+      "icon": "chats-circle",
+      "title": "Community Manager",
+      "desc": "Conversación, respuestas y comunidad: la cara de la marca en el día a día."
+    },
+    {
+      "id": "s5",
+      "icon": "monitor-play",
+      "title": "YouTube Strategist",
+      "desc": "Ideas, títulos, miniaturas y estructura para hacer crecer un canal con intención."
+    },
+    {
+      "id": "s6",
+      "icon": "target",
+      "title": "Content Strategist",
+      "desc": "Qué decir, dónde y cuándo: líneas de contenido alineadas a objetivos."
+    },
+    {
+      "id": "s7",
+      "icon": "sparkle",
+      "title": "Director Creativo",
+      "desc": "Concepto, guía visual y dirección del equipo para que todo cuente la misma historia."
+    }
   ],
   "categories": [
-    { "id": "video", "name": "Edición de video" },
-    { "id": "diseno", "name": "Diseño gráfico" },
-    { "id": "social", "name": "Social media" },
-    { "id": "youtube", "name": "YouTube" },
-    { "id": "direccion", "name": "Dirección creativa" },
-    { "id": "comunidad", "name": "Comunidad" },
-    { "id": "estrategia", "name": "Estrategia de contenido" }
+    {
+      "id": "video",
+      "name": "Edición de video"
+    },
+    {
+      "id": "diseno",
+      "name": "Diseño gráfico"
+    },
+    {
+      "id": "social",
+      "name": "Social media"
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube"
+    },
+    {
+      "id": "direccion",
+      "name": "Dirección creativa"
+    },
+    {
+      "id": "comunidad",
+      "name": "Comunidad"
+    },
+    {
+      "id": "estrategia",
+      "name": "Estrategia de contenido"
+    }
   ],
   "clients": [
-    { "id": "c1", "name": "Café Aurora", "logo": "", "website": "", "demo": true },
-    { "id": "c2", "name": "Estudio Norte", "logo": "", "website": "", "demo": true },
-    { "id": "c3", "name": "Fit Lab", "logo": "", "website": "", "demo": true },
-    { "id": "c4", "name": "Canal Marea", "logo": "", "website": "", "demo": true }
+    {
+      "id": "c1",
+      "name": "Café Aurora",
+      "logo": "",
+      "website": "",
+      "demo": true
+    },
+    {
+      "id": "c2",
+      "name": "Estudio Norte",
+      "logo": "",
+      "website": "",
+      "demo": true
+    },
+    {
+      "id": "c3",
+      "name": "Fit Lab",
+      "logo": "",
+      "website": "",
+      "demo": true
+    },
+    {
+      "id": "c4",
+      "name": "Canal Marea",
+      "logo": "",
+      "website": "",
+      "demo": true
+    }
   ],
   "projects": [
-    { "id": "p1", "title": "Reel de lanzamiento de temporada", "client": "Café Aurora", "category": "video", "date": "2026-09", "description": "Proyecto de ejemplo. Edición vertical con ritmo rápido, tipografía animada y mezcla de sonido para el lanzamiento de la carta de temporada.", "tags": ["Reels", "Motion"], "cover": "", "media": [], "link": "", "featured": true, "visible": true, "demo": true },
-    { "id": "p2", "title": "Sistema de piezas para redes", "client": "Estudio Norte", "category": "diseno", "date": "2026-09", "description": "Proyecto de ejemplo. Plantillas, paleta y jerarquía tipográfica para publicar piezas coherentes sin empezar de cero cada semana.", "tags": ["Plantillas", "Identidad"], "cover": "", "media": [], "link": "", "featured": false, "visible": true, "demo": true },
-    { "id": "p3", "title": "Serie semanal para YouTube", "client": "Canal Marea", "category": "youtube", "date": "2026-08", "description": "Proyecto de ejemplo. Estructura de episodios, ganchos de apertura, títulos y miniaturas para una serie con publicación semanal.", "tags": ["Miniaturas", "Guion"], "cover": "", "media": [], "link": "", "featured": true, "visible": true, "demo": true },
-    { "id": "p4", "title": "Calendario editorial trimestral", "client": "Fit Lab", "category": "estrategia", "date": "2026-07", "description": "Proyecto de ejemplo. Líneas de contenido, formatos y frecuencia de publicación ligados a los objetivos del trimestre.", "tags": ["Calendario", "Planificación"], "cover": "", "media": [], "link": "", "featured": false, "visible": true, "demo": true },
-    { "id": "p5", "title": "Campaña de comunidad", "client": "Café Aurora", "category": "comunidad", "date": "2026-07", "description": "Proyecto de ejemplo. Dinámicas, respuestas y seguimiento para activar a la comunidad durante una campaña de dos semanas.", "tags": ["Comunidad", "Campaña"], "cover": "", "media": [], "link": "", "featured": false, "visible": true, "demo": true },
-    { "id": "p6", "title": "Dirección creativa de marca", "client": "Estudio Norte", "category": "direccion", "date": "2026-06", "description": "Proyecto de ejemplo. Concepto, guía visual y dirección de un equipo pequeño para unificar cómo se ve y se escucha la marca.", "tags": ["Concepto", "Guía visual"], "cover": "", "media": [], "link": "", "featured": false, "visible": true, "demo": true }
+    {
+      "id": "p1",
+      "title": "Reel de lanzamiento de temporada",
+      "client": "Café Aurora",
+      "category": "video",
+      "date": "2026-09",
+      "description": "Proyecto de ejemplo. Edición vertical con ritmo rápido, tipografía animada y mezcla de sonido para el lanzamiento de la carta de temporada.",
+      "tags": [
+        "Reels",
+        "Motion"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": true,
+      "visible": true,
+      "demo": true
+    },
+    {
+      "id": "p2",
+      "title": "Sistema de piezas para redes",
+      "client": "Estudio Norte",
+      "category": "diseno",
+      "date": "2026-09",
+      "description": "Proyecto de ejemplo. Plantillas, paleta y jerarquía tipográfica para publicar piezas coherentes sin empezar de cero cada semana.",
+      "tags": [
+        "Plantillas",
+        "Identidad"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": false,
+      "visible": true,
+      "demo": true
+    },
+    {
+      "id": "p3",
+      "title": "Serie semanal para YouTube",
+      "client": "Canal Marea",
+      "category": "youtube",
+      "date": "2026-08",
+      "description": "Proyecto de ejemplo. Estructura de episodios, ganchos de apertura, títulos y miniaturas para una serie con publicación semanal.",
+      "tags": [
+        "Miniaturas",
+        "Guion"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": true,
+      "visible": true,
+      "demo": true
+    },
+    {
+      "id": "p4",
+      "title": "Calendario editorial trimestral",
+      "client": "Fit Lab",
+      "category": "estrategia",
+      "date": "2026-07",
+      "description": "Proyecto de ejemplo. Líneas de contenido, formatos y frecuencia de publicación ligados a los objetivos del trimestre.",
+      "tags": [
+        "Calendario",
+        "Planificación"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": false,
+      "visible": true,
+      "demo": true
+    },
+    {
+      "id": "p5",
+      "title": "Campaña de comunidad",
+      "client": "Café Aurora",
+      "category": "comunidad",
+      "date": "2026-07",
+      "description": "Proyecto de ejemplo. Dinámicas, respuestas y seguimiento para activar a la comunidad durante una campaña de dos semanas.",
+      "tags": [
+        "Comunidad",
+        "Campaña"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": false,
+      "visible": true,
+      "demo": true
+    },
+    {
+      "id": "p6",
+      "title": "Dirección creativa de marca",
+      "client": "Estudio Norte",
+      "category": "direccion",
+      "date": "2026-06",
+      "description": "Proyecto de ejemplo. Concepto, guía visual y dirección de un equipo pequeño para unificar cómo se ve y se escucha la marca.",
+      "tags": [
+        "Concepto",
+        "Guía visual"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": false,
+      "visible": true,
+      "demo": true
+    }
   ],
   "months": [
-    { "id": "2026-09", "month": "2026-09", "clients": ["Café Aurora", "Estudio Norte"], "deliverables": { "videos": 6, "designs": 14, "posts": 22, "campaigns": 1 }, "wins": "Ejemplo: lanzamiento de temporada publicado a tiempo y con buena respuesta de la comunidad.", "notes": "", "summary": "", "demo": true },
-    { "id": "2026-08", "month": "2026-08", "clients": ["Canal Marea", "Fit Lab"], "deliverables": { "videos": 8, "designs": 9, "posts": 18, "campaigns": 0 }, "wins": "Ejemplo: primera serie semanal de YouTube en marcha.", "notes": "", "summary": "", "demo": true },
-    { "id": "2026-07", "month": "2026-07", "clients": ["Fit Lab", "Café Aurora"], "deliverables": { "videos": 4, "designs": 11, "posts": 20, "campaigns": 1 }, "wins": "Ejemplo: calendario editorial aprobado por el cliente.", "notes": "", "summary": "", "demo": true },
-    { "id": "2026-06", "month": "2026-06", "clients": ["Estudio Norte"], "deliverables": { "videos": 2, "designs": 8, "posts": 10, "campaigns": 0 }, "wins": "", "notes": "", "summary": "", "demo": true }
+    {
+      "id": "2026-09",
+      "month": "2026-09",
+      "clients": [
+        "Café Aurora",
+        "Estudio Norte"
+      ],
+      "deliverables": {
+        "videos": 6,
+        "designs": 14,
+        "posts": 22,
+        "campaigns": 1
+      },
+      "wins": "Ejemplo: lanzamiento de temporada publicado a tiempo y con buena respuesta de la comunidad.",
+      "notes": "",
+      "summary": "",
+      "demo": true
+    },
+    {
+      "id": "2026-08",
+      "month": "2026-08",
+      "clients": [
+        "Canal Marea",
+        "Fit Lab"
+      ],
+      "deliverables": {
+        "videos": 8,
+        "designs": 9,
+        "posts": 18,
+        "campaigns": 0
+      },
+      "wins": "Ejemplo: primera serie semanal de YouTube en marcha.",
+      "notes": "",
+      "summary": "",
+      "demo": true
+    },
+    {
+      "id": "2026-07",
+      "month": "2026-07",
+      "clients": [
+        "Fit Lab",
+        "Café Aurora"
+      ],
+      "deliverables": {
+        "videos": 4,
+        "designs": 11,
+        "posts": 20,
+        "campaigns": 1
+      },
+      "wins": "Ejemplo: calendario editorial aprobado por el cliente.",
+      "notes": "",
+      "summary": "",
+      "demo": true
+    },
+    {
+      "id": "2026-06",
+      "month": "2026-06",
+      "clients": [
+        "Estudio Norte"
+      ],
+      "deliverables": {
+        "videos": 2,
+        "designs": 8,
+        "posts": 10,
+        "campaigns": 0
+      },
+      "wins": "",
+      "notes": "",
+      "summary": "",
+      "demo": true
+    }
   ],
-  "settings": { "demoContent": true }
+  "settings": {
+    "demoContent": true
+  }
 }

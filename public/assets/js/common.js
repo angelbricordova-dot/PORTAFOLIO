@@ -54,8 +54,28 @@ async function seed() {
   return res.json();
 }
 
+export const SOCIALS = [
+  { key: "instagram", label: "Instagram", icon: "instagram-logo", url: (h) => `https://instagram.com/${h}` },
+  { key: "tiktok", label: "TikTok", icon: "tiktok-logo", url: (h) => `https://tiktok.com/@${h}` },
+  { key: "youtube", label: "YouTube", icon: "youtube-logo", url: (h) => `https://youtube.com/@${h}` },
+  { key: "linkedin", label: "LinkedIn", icon: "linkedin-logo", url: (h) => `https://linkedin.com/in/${h}` },
+  { key: "behance", label: "Behance", icon: "behance-logo", url: (h) => `https://behance.net/${h}` },
+  { key: "x", label: "X", icon: "x-logo", url: (h) => `https://x.com/${h}` },
+  { key: "threads", label: "Threads", icon: "threads-logo", url: (h) => `https://threads.net/@${h}` },
+  { key: "facebook", label: "Facebook", icon: "facebook-logo", url: (h) => `https://facebook.com/${h}` },
+  { key: "twitch", label: "Twitch", icon: "twitch-logo", url: (h) => `https://twitch.tv/${h}` },
+];
+
+// Acepta @usuario o un enlace completo.
+export function socialUrl(social, value) {
+  const v = String(value || "").trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return safeUrl(v);
+  return social.url(v.replace(/^@/, ""));
+}
+
 export function normalize(site) {
-  site.profile ||= {};
+  site.profile = { years: 8, photo: "", logo: "", ...(site.profile || {}) };
   site.profile.roles ||= [];
   site.profile.socials ||= {};
   for (const key of ["services", "categories", "clients", "projects", "months"]) site[key] ||= [];
@@ -221,6 +241,8 @@ export function analyze(site) {
 
   /* lectura en texto (primera persona, sin inventar datos) */
   const n = result.narrative;
+  const years = Number(site.profile?.years) || 0;
+  if (years > 0) n.push(`Llevo más de ${years} años creando contenido para marcas y creadores como editor, diseñador y estratega.`);
   n.push(
     `Entre ${monthLong(result.first)} y ${monthLong(result.last)} he trabajado con ${plural(result.clients, "cliente", "clientes")} a lo largo de ${plural(result.activeMonths, "mes activo", "meses activos")}` +
       (result.projects ? `, con ${plural(result.projects, "proyecto publicado", "proyectos publicados")} en este portafolio.` : ".")
