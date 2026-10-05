@@ -47,7 +47,7 @@ function renderHero() {
 function renderRoles() {
   const roles = site.profile.roles.filter(Boolean);
   const host = $("#roles");
-  if (!roles.length) return host.remove();
+  if (!roles.length) return host.parentElement.remove();
   // se espera a la tipografía para medir bien el ancho del bucle
   (document.fonts?.ready ?? Promise.resolve()).then(() => initTicker(host, $("#rolesTrack"), roles.map(esc)));
 }
@@ -355,6 +355,8 @@ function renderContact() {
 
 /* ---------- Navegación y entradas ---------- */
 function initChrome() {
+  initTheme();
+  initProgress();
   const nav = $("#nav"), burger = $("#burger");
   const onScroll = () => nav.classList.toggle("is-stuck", scrollY > 10);
   addEventListener("scroll", onScroll, { passive: true });
@@ -373,4 +375,47 @@ function watchReveals() {
     if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
   }), { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
   els.forEach((el) => io.observe(el));
+}
+
+/* ---------- Modo diurno / nocturno ---------- */
+function initTheme() {
+  const root = document.documentElement, btn = $("#theme"), meta = $('meta[name="theme-color"]');
+  const label = () => {
+    const dark = root.dataset.theme === "dark";
+    btn.setAttribute("aria-label", dark ? "Cambiar a modo diurno" : "Cambiar a modo nocturno");
+    btn.title = dark ? "Modo diurno" : "Modo nocturno";
+    meta?.setAttribute("content", dark ? "#050c20" : "#eaf0f8");
+  };
+  label();
+  btn.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    const apply = () => {
+      root.dataset.theme = next;
+      try { localStorage.setItem("lamont-theme", next); } catch { /* sin almacenamiento */ }
+      label();
+    };
+    if (!document.startViewTransition || reduceMotion) return apply();
+    // el cambio se despliega como un círculo que sale del botón
+    const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    document.startViewTransition(apply).ready.then(() => root.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: "cubic-bezier(0.23, 1, 0.32, 1)", pseudoElement: "::view-transition-new(root)" }
+    ));
+  });
+}
+
+/* ---------- Barra de progreso de lectura ---------- */
+function initProgress() {
+  const bar = $("#progress");
+  let raf = 0;
+  const update = () => {
+    raf = 0;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.setProperty("--p", max > 0 ? Math.min(1, scrollY / max).toFixed(4) : 0);
+  };
+  const queue = () => { if (!raf) raf = requestAnimationFrame(update); };
+  addEventListener("scroll", queue, { passive: true });
+  addEventListener("resize", queue);
+  update();
 }

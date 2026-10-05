@@ -15,28 +15,20 @@ export function initCursor() {
   const dot = mk("cur-dot"), ringEl = mk("cur-ring", `<i></i><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="21" id="curArc"></circle></svg>`), label = mk("cur-label");
   const dotWrap = mk("cur"), ringWrap = mk("cur"), labelWrap = mk("cur");
   dotWrap.append(dot); ringWrap.append(ringEl); labelWrap.append(label);
-  const canvas = Object.assign(document.createElement("canvas"), { id: "trail" });
-  document.body.append(canvas, ringWrap, dotWrap, labelWrap);
+  document.body.append(ringWrap, dotWrap, labelWrap);
   const arc = ringEl.querySelector("#curArc");
   const C = 2 * Math.PI * 21;
   arc.style.strokeDasharray = C;
-  const ctx = canvas.getContext("2d");
-  let W = 0, H = 0, dpr = 1;
-  const size = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
-  size(); addEventListener("resize", size);
-
   const m = { x: -100, y: -100, px: -100, py: -100 };
   const ring = { x: -100, y: -100, vx: 0, vy: 0, s: 1 };
   const lab = { x: -100, y: -100, vx: 0, vy: 0 };
   let seen = false, link = false, text = "", down = false, scrollY0 = scrollY, progress = 0;
-  const parts = [];
-  const COLORS = ["#ffc53d", "#ffc53d", "#8db4ff", "#ffffff"];
-
-  const spawn = (x, y, n, boost = 1) => {
-    for (let i = 0; i < n; i++) {
-      const a = Math.random() * Math.PI * 2, sp = (0.4 + Math.random() * 1.6) * boost;
-      parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.4, r: 1.6 + Math.random() * 3.2, life: 0, max: 34 + Math.random() * 30, c: COLORS[(Math.random() * COLORS.length) | 0] });
-    }
+  // un solo aro que se expande al hacer clic
+  const ripple = (x, y) => {
+    const el = Object.assign(document.createElement("div"), { className: "cur-ripple" });
+    el.style.left = `${x}px`; el.style.top = `${y}px`;
+    el.addEventListener("animationend", () => el.remove());
+    document.body.append(el);
   };
 
   addEventListener("pointermove", (e) => {
@@ -55,7 +47,7 @@ export function initCursor() {
   }, { passive: true });
   document.addEventListener("pointerleave", () => { dotWrap.style.opacity = ringWrap.style.opacity = labelWrap.style.opacity = 0; });
   document.addEventListener("pointerenter", () => { dotWrap.style.opacity = ringWrap.style.opacity = labelWrap.style.opacity = ""; });
-  addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; down = true; labelWrap.classList.add("is-down"); spawn(e.clientX, e.clientY, 16, 2.6); });
+  addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; down = true; labelWrap.classList.add("is-down"); ripple(e.clientX, e.clientY); });
   addEventListener("pointerup", () => { down = false; labelWrap.classList.remove("is-down"); });
   // El anillo tiene masa: al hacer scroll se arrastra en sentido contrario.
   addEventListener("scroll", () => {
@@ -69,8 +61,6 @@ export function initCursor() {
   const loop = (now) => {
     const dt = Math.min(2, (now - last) / 16.67); last = now;
     // punto: casi inmediato; anillo: muelle con rebote; etiqueta: más pesada
-    const dx = m.x - m.px, dy = m.y - m.py; m.px = m.x; m.py = m.y;
-    const speed = Math.hypot(dx, dy);
     dotWrap.style.transform = `translate3d(${m.x}px, ${m.y}px, 0)`;
 
     ring.vx = (ring.vx + (m.x - ring.x) * 0.16 * dt) * Math.pow(0.7, dt); ring.vy = (ring.vy + (m.y - ring.y) * 0.16 * dt) * Math.pow(0.7, dt);
@@ -86,21 +76,6 @@ export function initCursor() {
     lab.x += lab.vx * dt; lab.y += lab.vy * dt;
     labelWrap.style.transform = `translate3d(${lab.x}px, ${lab.y}px, 0)`;
 
-    // rastro: lo que genera el puntero al moverse; cae por gravedad
-    if (seen && speed > 5 && !text) spawn(m.x, m.y, Math.min(3, 1 + (speed / 14) | 0), link ? 1.6 : 0.8);
-    if (parts.length || !ctx._clean) {
-      ctx.clearRect(0, 0, W, H);
-      ctx._clean = !parts.length;
-      for (let i = parts.length - 1; i >= 0; i--) {
-        const p = parts[i];
-        p.life += dt; p.vy += 0.05 * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt;
-        const k = 1 - p.life / p.max;
-        if (k <= 0) { parts.splice(i, 1); continue; }
-        ctx.globalAlpha = k; ctx.fillStyle = p.c;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.4 + k * 0.6), 0, 6.283); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
@@ -165,7 +140,7 @@ export function initHero() {
 /* ---------- Cinta de roles: arrastrable, y más lenta (no se detiene) al pasar el cursor ---------- */
 export function initTicker(host, track, items) {
   if (!host || !items.length) return;
-  const unit = items.map((r) => `<span class="roles__item"><span>${r}</span><svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#star-four-fill"></use></svg></span>`).join("");
+  const unit = items.map((r) => `<span class="roles__item"><span>${r}</span><i class="roles__sep" aria-hidden="true"></i></span>`).join("");
   track.innerHTML = unit;
   const one = track.scrollWidth;
   const copies = Math.max(2, Math.ceil((innerWidth * 2) / Math.max(one, 1)) + 1);

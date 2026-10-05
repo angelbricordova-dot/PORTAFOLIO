@@ -46,6 +46,10 @@ Los datos locales se guardan en `.data/` (no se sube a Git). Define `ADMIN_PASSW
 
 ## Cambiar fotos y logo
 
-Desde el panel, en **Perfil y contacto → Imágenes**: sube la foto principal (centro de la portada) y el logo (esquina superior izquierda). «Usar la original» vuelve a las imágenes que vienen en el proyecto (`public/assets/img/lamont.webp` y `logo.webp`).
+Desde el panel, en **Perfil y contacto → Imágenes**: sube la foto principal (centro de la portada) y el logo (esquina superior izquierda; mejor un PNG con fondo transparente). «Usar la original» vuelve a las imágenes que vienen en el proyecto (`public/assets/img/lamont.webp` y `logo.webp`).
 
 Si cambias fuentes o iconos del sitio: `npm run assets` regenera `public/assets/fonts` e `icons.svg`.
+
+Para recortar otro avatar y dejarlo con fondo transparente: `pip install pillow numpy scipy` y luego `python3 scripts/make-logo.py avatar.png`.
+
+El sitio tiene modo diurno y nocturno (botón de la luna junto al menú); recuerda la elección de cada visitante y, la primera vez, usa la preferencia de su dispositivo.

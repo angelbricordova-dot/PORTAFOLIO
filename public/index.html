@@ -14,10 +14,12 @@
   <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/syne.woff2" as="font" type="font/woff2" crossorigin>
+  <script>try{var t=localStorage.getItem("lamont-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body>
+  <div class="progress" id="progress" aria-hidden="true"><i></i></div>
   <a class="skip" href="#trabajos">Saltar al contenido</a>
 
   <header class="nav" id="nav">
@@ -33,6 +35,10 @@
         <a href="#contacto">Contacto</a>
       </nav>
       <a class="btn btn--accent btn--sm nav__cta" href="#contacto">Hablemos</a>
+      <button class="theme" id="theme" type="button" aria-label="Cambiar a modo nocturno" title="Modo nocturno">
+        <svg class="ico moon" aria-hidden="true"><use href="/assets/icons.svg#moon"></use></svg>
+        <svg class="ico sun" aria-hidden="true"><use href="/assets/icons.svg#sun"></use></svg>
+      </button>
       <button class="nav__burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks">
         <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#list"></use></svg>
       </button>
@@ -67,8 +73,10 @@
     </section>
 
     <!-- ROLES: se puede arrastrar; al pasar el cursor solo va más lento -->
-    <div class="roles" id="roles" data-cursor="Arrastra" aria-label="Roles">
-      <div class="roles__track" id="rolesTrack"></div>
+    <div class="roles-wrap">
+      <div class="roles" id="roles" data-cursor="Arrastra" aria-label="Roles">
+        <div class="roles__track" id="rolesTrack"></div>
+      </div>
     </div>
 
     <!-- TRABAJOS -->

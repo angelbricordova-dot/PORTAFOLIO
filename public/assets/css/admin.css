@@ -7,7 +7,7 @@
 .login { min-height: 100dvh; display: grid; place-items: center; padding: 20px; }
 .login__card { width: min(420px, 100%); background: var(--surface); border-radius: var(--r-box); padding: clamp(24px, 5vw, 40px); display: grid; gap: 16px; box-shadow: var(--shadow); animation: up 500ms var(--ease-out) both; }
 @keyframes up { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
-.login__card img { width: 72px; height: 72px; object-fit: cover; border-radius: 50%; }
+.login__card img { height: 84px; width: auto; justify-self: start; object-fit: contain; }
 .login__card h1 { font: 800 1.9rem/1 var(--font-display); letter-spacing: -0.03em; }
 .back { text-align: center; font-size: 14px; color: var(--muted); }
 
@@ -28,7 +28,7 @@
 .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100dvh; }
 .side { position: sticky; top: 0; height: 100dvh; padding: 20px 14px; display: flex; flex-direction: column; gap: 22px; background: var(--surface); border-right: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 800 1.3rem/1 var(--font-display); letter-spacing: -0.02em; padding: 4px 8px; }
-.brand img { width: 36px; height: 36px; }
+.brand img { height: 38px; width: auto; object-fit: contain; }
 .side__nav { display: grid; gap: 4px; }
 .nav-btn { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border: 0; border-radius: var(--r-pill); background: transparent; text-align: left; font-weight: 600; font-size: 15px; transition: background-color 150ms, color 150ms, transform 150ms var(--ease-out); }
 .nav-btn:hover { background: var(--bg); }
@@ -154,6 +154,6 @@
   .item__actions { grid-column: 1 / -1; justify-content: flex-end; }
 }
 
-.thumb--round { border-radius: 50%; }
+.thumb--round { border-radius: 14px; background: var(--blue-soft); } .thumb--round img { object-fit: contain; padding: 6px; }
 .thumb--photo { width: 72px; height: 88px; border-radius: 14px; }
-.brand img, .login__card img { border-radius: 50%; object-fit: cover; }
+.brand img, .login__card img { border-radius: 0; object-fit: contain; }

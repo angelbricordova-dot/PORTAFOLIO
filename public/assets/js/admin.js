@@ -468,7 +468,7 @@ function viewProfile() {
   return `
     <section class="panel"><h2>Imágenes</h2>
       ${imageField("photo", "Foto principal (centro de la portada)", "Mejor vertical, con tu cara en el tercio superior. Si no subes ninguna, se usa la foto original.", "thumb--photo")}
-      ${imageField("logo", "Logo (esquina superior izquierda)", "Se recorta en círculo. Una imagen cuadrada con tu cara centrada queda mejor.", "thumb--round")}
+      ${imageField("logo", "Logo (esquina superior izquierda)", "Mejor un PNG con fondo transparente y solo tu cara, sin recortes circulares.", "thumb--round")}
     </section>
     <section class="panel"><h2>Quién eres</h2>
       <div class="row"><div class="field"><label for="p-name">Nombre completo</label><input id="p-name" ${bind("profile.name", p.name)}></div>
