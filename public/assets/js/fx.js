@@ -33,7 +33,12 @@ export function initCursor() {
 
   addEventListener("pointermove", (e) => {
     if (e.pointerType !== "mouse") return;
-    if (!seen) { seen = true; cursorOn = true; ring.x = lab.x = m.px = m.x = e.clientX; ring.y = lab.y = m.py = m.y = e.clientY; root.classList.add("has-cursor"); }
+    if (!seen) {
+      seen = true; cursorOn = true;
+      ring.x = lab.x = m.px = m.x = e.clientX; ring.y = lab.y = m.py = m.y = e.clientY;
+      // si un cuadro de diálogo ya está abierto (p. ej. el enlace de testimonio), se deja el puntero del sistema
+      if (!root.classList.contains("cur-hidden")) root.classList.add("has-cursor");
+    }
     m.x = e.clientX; m.y = e.clientY;
     const t = e.target.closest?.("a, button, summary, [data-cursor], .pill, .card, .client, .cell, label, [role=button]");
     link = !!t && !t.matches?.("[data-cursor-off]");

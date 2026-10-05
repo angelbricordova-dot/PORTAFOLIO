@@ -428,7 +428,7 @@ html[data-theme="dark"] .theme .moon { display: none; }
 .tform { width: min(520px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; }
 .tform[open], .lightbox[open] { animation: dlg 320ms var(--ease-out); }
 .tform::backdrop, .lightbox::backdrop { background: rgba(6, 16, 43, 0.7); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: fade 250ms ease-out; }
-.tform form { padding: 26px; display: grid; gap: 16px; }
+.tform form { padding: 26px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .tform__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .tform .viewer__close { position: static; }
 .muted-text { color: var(--muted); }
@@ -451,3 +451,7 @@ html[data-theme="dark"] .theme .moon { display: none; }
 
 .testi .empty { flex: 1; }
 .carousel-nav[hidden] { display: none; }
+
+.tform { overflow-x: hidden; }
+.rating__row input { left: 0; top: 0; }
+.rating__row { position: relative; }
