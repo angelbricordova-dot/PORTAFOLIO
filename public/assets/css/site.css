@@ -448,3 +448,6 @@ html[data-theme="dark"] .theme .moon { display: none; }
 .lightbox__text { padding: clamp(28px, 5vw, 56px); display: grid; gap: 22px; }
 .lightbox__text blockquote { margin: 0; font: 500 clamp(1.3rem, 2.6vw, 1.9rem)/1.3 var(--font-display); letter-spacing: -0.015em; white-space: pre-line; }
 .lightbox__cap { padding: 18px 24px 24px; color: var(--ink-2); }
+
+.testi .empty { flex: 1; }
+.carousel-nav[hidden] { display: none; }

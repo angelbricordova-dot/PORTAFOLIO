@@ -431,11 +431,13 @@ function renderTestimonials() {
   testi = site.testimonials
     .filter((t) => t.visible !== false)
     .sort((a, b) => Number(!!b.featured) - Number(!!a.featured) || String(b.date).localeCompare(String(a.date)));
-  const section = $("#testimonios");
-  $("#navTesti").hidden = !testi.length;
-  if (!testi.length) return (section.hidden = true);
-  section.hidden = false;
   const box = $("#testi");
+  if (!testi.length) {
+    // sin testimonios todavía: la sección y el enlace del menú siguen visibles
+    $(".carousel-nav").hidden = true;
+    box.innerHTML = `<div class="empty"><strong>Aquí van los testimonios</strong>Pronto publicaré lo que dicen mis clientes sobre trabajar conmigo.</div>`;
+    return;
+  }
   box.innerHTML = testi.map(tcardHTML).join("");
   box.querySelectorAll("[data-audio]").forEach(initAudio);
   box.addEventListener("click", (e) => { const b = e.target.closest("[data-lb]"); if (b && !dragged) openLightbox(b.dataset.lb); });
