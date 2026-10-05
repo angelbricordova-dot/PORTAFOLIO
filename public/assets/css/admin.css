@@ -165,3 +165,4 @@
 .seg span { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--line); border-radius: var(--r-pill); font-weight: 600; font-size: 14px; transition: background-color 150ms, color 150ms; }
 .seg input:checked + span { background: var(--solid); color: var(--on-solid); border-color: var(--solid); }
 .seg input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+.health { margin: 0; padding: 14px; border-radius: 14px; background: var(--navy-deep); color: #eaf0f8; font: 13px/1.5 var(--font-mono); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }

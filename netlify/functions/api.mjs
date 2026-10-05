@@ -27,14 +27,12 @@ const DOC_KEYS = ["profile", "services", "categories", "clients", "projects", "m
 const MAX_PENDING = 60;
 
 /* ---------- almacenamiento ---------- */
-let storePromise;
-function getStorage() {
-  storePromise ??= (async () => {
-    if (process.env.PORTFOLIO_LOCAL) return fileStore(join(process.cwd(), ".data"));
-    const { getStore } = await import("@netlify/blobs");
-    return getStore({ name: "portfolio", consistency: "strong" });
-  })();
-  return storePromise;
+// Se crea en cada petición: el acceso a Netlify Blobs va ligado a la invocación actual,
+// así que no se guarda entre peticiones (en instancias "calientes" caducaría).
+async function getStorage() {
+  if (process.env.PORTFOLIO_LOCAL) return fileStore(join(process.cwd(), ".data"));
+  const { getStore } = await import("@netlify/blobs");
+  return getStore({ name: "portfolio", consistency: "strong" });
 }
 
 // Misma interfaz mínima que Netlify Blobs, sobre disco, para probar en local.
@@ -185,12 +183,28 @@ export default async (req) => {
     if (path === "/api/data" && method === "PUT") {
       const raw = await req.text();
       if (raw.length > MAX_DOC) return fail(413, "Los datos son demasiado grandes");
-      const doc = cleanDoc(JSON.parse(raw));
+      let parsed; try { parsed = JSON.parse(raw); } catch { return fail(400, "Formato de datos inválido"); }
+      const doc = cleanDoc(parsed);
       if (!doc) return fail(400, "Formato de datos inválido");
       doc.updatedAt = new Date().toISOString();
       const store = await getStorage();
       await store.setJSON("site", doc);
       return json({ ok: true, updatedAt: doc.updatedAt });
+    }
+
+    // Diagnóstico: comprueba que el almacenamiento (Netlify Blobs) lee y escribe.
+    if (path === "/api/health" && method === "GET") {
+      const out = { node: process.version, password: !!process.env.ADMIN_PASSWORD, netlify: !!process.env.NETLIFY, blobsContext: !!process.env.NETLIFY_BLOBS_CONTEXT, steps: {} };
+      const step = async (name, fn) => { try { out.steps[name] = (await fn()) ?? "ok"; } catch (e) { out.steps[name] = `FALLÓ: ${e?.name}: ${String(e?.message || e).slice(0, 300)}`; } };
+      let store;
+      await step("abrir almacenamiento", async () => { store = await getStorage(); });
+      if (store) {
+        await step("escribir", () => store.setJSON("health-check", { at: Date.now() }));
+        await step("leer", async () => ((await store.get("health-check", { type: "json" }))?.at ? "ok" : "no se encontró lo escrito"));
+        await step("leer datos del sitio", async () => { const d = await store.get("site", { type: "json" }); return d ? `ok (${Object.keys(d).length} secciones)` : "ok (aún no hay datos publicados)"; });
+        await step("borrar", () => store.delete("health-check"));
+      }
+      return json(out);
     }
 
     if (path === "/api/pending" && method === "GET") {
@@ -229,7 +243,9 @@ export default async (req) => {
 
     return fail(404, "Ruta no encontrada");
   } catch (err) {
-    console.error(err);
-    return fail(500, "Error del servidor");
+    console.error("api error:", method, path, err);
+    // el detalle técnico solo se muestra a quien tiene sesión de administrador
+    const detail = isAuthed(req) ? ` (${err?.name || "Error"}: ${String(err?.message || err).slice(0, 300)})` : "";
+    return fail(500, `Error del servidor${detail}`);
   }
 };

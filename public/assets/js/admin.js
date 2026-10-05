@@ -663,6 +663,10 @@ function viewBackup() {
     <section class="panel"><h2>Contenido de ejemplo</h2>
       <p class="muted">Quita los trabajos, clientes y meses de ejemplo para dejar solo lo tuyo.</p>
       <div class="toolbar"><button class="btn btn--ghost" data-act="clear-demo">Borrar ejemplos</button><button class="btn btn--ghost" data-act="reload">${icon("arrow-counter-clockwise")} Descartar cambios y recargar lo publicado</button></div></section>
+    <section class="panel"><h2>Diagnóstico</h2>
+      <p class="muted">Si al publicar aparece un error, esta prueba comprueba si el servidor puede guardar y leer tus datos.</p>
+      <div class="toolbar"><button class="btn btn--ghost" data-act="health">${icon("check-circle")} Probar conexión con el servidor</button></div>
+      <pre id="healthOut" class="health" hidden></pre></section>
     <section class="panel"><h2>Acceso</h2>
       <p class="muted">La contraseña de este panel es la variable <b>ADMIN_PASSWORD</b> de Netlify (Site configuration → Environment variables). Para cambiarla, edita la variable y vuelve a desplegar.</p></section>`;
 }
@@ -755,6 +759,10 @@ $("#view").addEventListener("click", (e) => {
     }
     case "copy-analysis": return navigator.clipboard?.writeText(analyze(S).narrative.join("\n\n")).then(() => toast("Análisis copiado"), () => toast("No pude copiar", true));
     case "clear-img": S.profile[b.dataset.key] = ""; touch(); applyLogo(); return paint();
+    case "health": {
+      const out = $("#healthOut"); out.hidden = false; out.textContent = "Probando…";
+      return api("/api/health").then((r) => { out.textContent = JSON.stringify(r, null, 2); }, (e) => { out.textContent = `No se pudo probar: ${e.message}`; });
+    }
     case "export": return exportData();
     case "reload": if (!dirty || confirm("Se perderán los cambios sin publicar. ¿Continuar?")) { safe(() => localStorage.removeItem(DRAFT_KEY)); dirty = false; loadSite().then((s) => { S = normalize(s); go(view); setStatus(); toast("Recargado desde lo publicado"); }); } return;
     case "clear-demo": {
