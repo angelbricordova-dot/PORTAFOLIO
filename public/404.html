@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>404 · Esta página no existe — Lamont</title>
+  <meta name="description" content="La página que buscas no existe. Vuelve al portafolio de Lamont.">
+  <meta name="theme-color" content="#eaf0f8">
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+  <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+  <script>try{var t=localStorage.getItem("lamont-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/notfound.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__in">
+      <a class="brand" href="/" aria-label="Lamont, inicio"><img class="js-logo" src="/assets/img/logo.webp" alt="" width="36" height="36"><span>Lamont</span></a>
+      <button class="theme" id="theme" type="button" aria-label="Cambiar a modo nocturno" style="margin-left:auto">
+        <svg class="ico moon" aria-hidden="true"><use href="/assets/icons.svg#moon"></use></svg>
+        <svg class="ico sun" aria-hidden="true"><use href="/assets/icons.svg#sun"></use></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="nf">
+    <p class="nf__tc mono" aria-hidden="true">Error 404</p>
+    <h1 class="nf__code" aria-label="Error 404">
+      <span aria-hidden="true">4</span><span class="nf__zero" aria-hidden="true"><img class="js-logo nf__face" id="face" src="/assets/img/logo.webp" alt="" width="200" height="200"></span><span aria-hidden="true">4</span>
+    </h1>
+    <div class="nf__line" aria-hidden="true"><i></i></div>
+    <h2 class="nf__title">Este corte no está en la línea de tiempo.</h2>
+    <p class="nf__text">La página <code id="nfPath"></code> no existe o cambió de lugar. Vuelve al inicio y sigue explorando.</p>
+    <a class="btn btn--accent" href="/">Volver al inicio <svg class="ico" aria-hidden="true"><use href="/assets/icons.svg#arrow-up-right"></use></svg></a>
+    <nav class="nf__links" aria-label="Secciones">
+      <a class="pill" href="/#trabajos">Trabajos</a>
+      <a class="pill" href="/#testimonios">Testimonios</a>
+      <a class="pill" href="/#trayectoria">Trayectoria</a>
+      <a class="pill" href="/#servicios">Servicios</a>
+      <a class="pill" href="/#contacto">Contacto</a>
+    </nav>
+  </main>
+
+  <script type="module" src="/assets/js/notfound.js"></script>
+</body>
+</html>

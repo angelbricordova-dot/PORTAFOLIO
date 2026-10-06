@@ -3,7 +3,7 @@
 Sitio de portafolio con panel de administración, hecho para Netlify. No tiene paso de compilación: son archivos estáticos, una función serverless y Netlify Blobs para guardar los datos y las imágenes.
 
 ```
-public/            lo que se publica (sitio en /, panel en /admin)
+public/            lo que se publica (sitio en /, panel en /panel)
 netlify/functions/ API: datos públicos, login, guardado y subida de archivos
 scripts/           herramientas para regenerar iconos, fuentes y el personaje 3D
 dev-server.mjs     servidor local para probar todo sin Netlify
@@ -15,11 +15,17 @@ dev-server.mjs     servidor local para probar todo sin Netlify
 2. Antes del primer despliegue, en **Site configuration → Environment variables** crea:
    - `ADMIN_PASSWORD`: la contraseña con la que entrarás al panel. Usa una larga.
    - `SESSION_SECRET` (opcional): una cadena aleatoria para firmar las sesiones.
-3. Despliega. Entra a `tu-sitio.netlify.app/admin`, inicia sesión y pulsa **Publicar cambios**.
+3. Despliega. Entra a `tu-sitio.netlify.app/panel`, inicia sesión y pulsa **Publicar cambios**.
 
 > Arrastrar la carpeta a Netlify Drop **no** sirve: ese método no despliega funciones, y sin ellas no hay panel.
 
 El formulario de contacto usa Netlify Forms. Los mensajes llegan en **Forms** dentro de Netlify; ahí también puedes activar avisos por correo.
+
+## Entrar al panel
+
+El panel está en **`tu-sitio/panel`** (también responde `/admin`). No hay ningún enlace al panel en el sitio público: se entra escribiendo la dirección. La contraseña es la variable `ADMIN_PASSWORD`.
+
+Cualquier dirección que no exista muestra la página 404 personalizada (`public/404.html`).
 
 ## Cómo se usa el panel
 
@@ -41,7 +47,7 @@ El formulario de contacto usa Netlify Forms. Los mensajes llegan en **Forms** de
 
 ```bash
 npm install
-npm run dev          # http://localhost:8888  ·  panel en /admin  ·  clave local: lamont
+npm run dev          # http://localhost:8888  ·  panel en /panel  ·  clave local: lamont
 ```
 
 Los datos locales se guardan en `.data/` (no se sube a Git). Define `ADMIN_PASSWORD` para usar otra clave.

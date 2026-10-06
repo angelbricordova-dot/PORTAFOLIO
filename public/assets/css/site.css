@@ -281,8 +281,6 @@ a.client:hover { background: var(--accent); transform: translateY(-2px); }
 .foot { border-top: 1px solid var(--line); }
 .foot__in { max-width: var(--wrap); margin: 0 auto; padding: 28px var(--gutter) calc(28px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: 14px; }
 .foot__in .brand { color: var(--ink); }
-.foot__admin { margin-left: auto; text-decoration: none; padding: 8px 14px; border-radius: var(--r-pill); border: 1px solid var(--line); }
-.foot__admin:hover { background: var(--solid); color: var(--on-solid); }
 
 /* ---------- Responsivo ---------- */
 @media (hover: hover) { .card { will-change: transform; } }

@@ -29,13 +29,15 @@ createServer(async (req, res) => {
   try {
     if ((await stat(file)).isDirectory()) file = join(file, "index.html");
   } catch {
-    if (url.pathname === "/admin") file = join(root, "admin/index.html");
+    if (["/admin", "/panel", "/panel/"].includes(url.pathname)) file = join(root, "admin/index.html");
   }
   try {
     const data = await readFile(file);
     res.writeHead(200, { "content-type": types[extname(file)] || "application/octet-stream", "cache-control": "no-store" });
     res.end(data);
   } catch {
-    res.writeHead(404).end("No encontrado");
+    try {
+      res.writeHead(404, { "content-type": "text/html; charset=utf-8" }).end(await readFile(join(root, "404.html")));
+    } catch { res.writeHead(404).end("No encontrado"); }
   }
-}).listen(port, () => console.log(`Portafolio en http://localhost:${port}  ·  admin: /admin  (clave local: ${process.env.ADMIN_PASSWORD})`));
+}).listen(port, () => console.log(`Portafolio en http://localhost:${port}  ·  panel: /panel  (clave local: ${process.env.ADMIN_PASSWORD})`));

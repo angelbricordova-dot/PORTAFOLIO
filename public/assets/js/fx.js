@@ -87,7 +87,7 @@ export function initCursor() {
 }
 
 /* ---------- Botones que se acercan al cursor ---------- */
-export function initMagnets(selector = ".btn, .nav__links a, .socials a, .pill, .foot__admin") {
+export function initMagnets(selector = ".btn, .nav__links a, .socials a, .pill") {
   if (!fine.matches || reduced.matches) return;
   const mark = () => document.querySelectorAll(selector).forEach((el) => el.setAttribute("data-magnet", ""));
   mark();

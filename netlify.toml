@@ -5,6 +5,17 @@
 [functions]
   node_bundler = "esbuild"
 
+# El panel se abre en /panel (tambien responde /admin). No hay ningun enlace visible en el sitio.
+[[redirects]]
+  from = "/panel"
+  to = "/admin/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/panel/"
+  to = "/admin/index.html"
+  status = 200
+
 [[redirects]]
   from = "/admin"
   to = "/admin/index.html"
