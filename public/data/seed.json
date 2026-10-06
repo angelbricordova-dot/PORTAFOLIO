@@ -75,6 +75,12 @@
       "icon": "sparkle",
       "title": "Director Creativo",
       "desc": "Concepto, guía visual y dirección del equipo para que todo cuente la misma historia."
+    },
+    {
+      "id": "s8",
+      "icon": "house",
+      "title": "Estrategia para Airbnb",
+      "desc": "Posiciono tu alojamiento en Airbnb para ganar buenas reseñas y más reservas, y creo su cuenta de Instagram con una estrategia para atraer seguidores y huéspedes."
     }
   ],
   "categories": [
@@ -138,6 +144,26 @@
     }
   ],
   "projects": [
+    {
+      "id": "p-airbnb",
+      "title": "De casi sin huéspedes a un Airbnb con reservas",
+      "client": "",
+      "category": "estrategia",
+      "date": "",
+      "description": "Un apartamento en Airbnb que casi no recibía huéspedes. Armé toda la estrategia: creé desde cero su cuenta de Instagram y la hice crecer con contenido pensado para atraer seguidores, y posicioné el anuncio en Airbnb para conseguir buenas reseñas. Resultado: muchos más seguidores, más reservas y hasta 2.000 USD de ganancia en un mes entre varios huéspedes.",
+      "tags": [
+        "Airbnb",
+        "Instagram",
+        "Reseñas",
+        "Estrategia"
+      ],
+      "cover": "",
+      "media": [],
+      "link": "",
+      "featured": true,
+      "visible": true,
+      "demo": false
+    },
     {
       "id": "p1",
       "title": "Reel de lanzamiento de temporada",
@@ -321,7 +347,10 @@
     }
   ],
   "settings": {
-    "demoContent": true
+    "demoContent": true,
+    "migrations": [
+      "airbnb-v1"
+    ]
   },
   "testimonials": [
     {

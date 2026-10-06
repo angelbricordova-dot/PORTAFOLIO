@@ -78,6 +78,7 @@ async function start() {
   $("#app").hidden = false;
   applyLogo();
   go(view);
+  if (S._migrated) { delete S._migrated; touch(); toast("Agregué tu caso de Airbnb a Servicios y Trabajos. Revísalo y pulsa «Publicar cambios»."); }
   setStatus();
   loadPending();
 }
