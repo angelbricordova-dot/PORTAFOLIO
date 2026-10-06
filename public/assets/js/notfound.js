@@ -32,18 +32,5 @@ fetch("/api/data").then((r) => (r.ok ? r.json() : null)).then((doc) => {
   if (logo && (logo.startsWith("/") || /^https?:\/\//i.test(logo)) && !logo.startsWith("//")) document.querySelectorAll(".js-logo").forEach((i) => { i.src = logo; });
 }).catch(() => {});
 
-// La cara del "0" se inclina hacia el puntero
-const face = document.getElementById("face");
-if (face && !reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
-  addEventListener("pointermove", (e) => {
-    const r = face.getBoundingClientRect();
-    const nx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
-    const ny = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
-    face.style.setProperty("--ry", `${nx * 22}deg`);
-    face.style.setProperty("--rx", `${-ny * 18}deg`);
-    face.style.setProperty("--rot", `${nx * 6}deg`);
-  }, { passive: true });
-}
-
 initCursor();
 initMagnets();

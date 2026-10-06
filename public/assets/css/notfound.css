@@ -1,14 +1,10 @@
 /* Página 404 */
 .nf { min-height: 100dvh; display: grid; justify-items: center; align-content: center; gap: 22px; padding: 110px var(--gutter) 64px; text-align: center; overflow: hidden; }
 .nf__tc { color: var(--muted); opacity: 1; animation: rise 700ms var(--ease-out) both; }
-.nf__code { display: flex; align-items: center; justify-content: center; gap: clamp(0px, 1vw, 12px); margin: 0; font: 800 clamp(8rem, 27vw, 21rem)/0.8 var(--font-display); letter-spacing: -0.07em; color: var(--ink); user-select: none; }
-.nf__code > span:not(.nf__zero) { animation: rise 800ms var(--ease-out) both; }
-.nf__code > span:last-child { animation-delay: 120ms; }
-.nf__zero { display: grid; place-items: center; width: 0.74em; height: 0.74em; margin-inline: -0.02em; }
-.nf__face { width: 100%; height: 100%; object-fit: contain; border-radius: 0; transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(var(--rot, 0deg)); transition: transform 500ms var(--ease-out); animation: pop 900ms var(--ease-out) 60ms both, bob 4.5s ease-in-out 1s infinite; filter: drop-shadow(0 18px 18px rgba(6, 16, 43, 0.25)); }
-html[data-theme="dark"] .nf__face { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.7)) drop-shadow(0 18px 18px rgba(0, 0, 0, 0.5)); }
-@keyframes bob { 50% { translate: 0 -2.5%; } }
-
+.nf__code { display: flex; align-items: center; justify-content: center; margin: 0; font: 800 clamp(8rem, 27vw, 21rem)/0.8 var(--font-display); letter-spacing: -0.07em; color: var(--ink); user-select: none; }
+.nf__code > span { animation: rise 800ms var(--ease-out) both; }
+.nf__code > span:nth-child(2) { animation-delay: 80ms; }
+.nf__code > span:nth-child(3) { animation-delay: 160ms; }
 /* Línea de tiempo con cabezal dorado */
 .nf__line { position: relative; width: min(560px, 86vw); height: 26px; background: repeating-linear-gradient(90deg, var(--muted) 0 1.5px, transparent 1.5px 14px) bottom / 100% 10px no-repeat, linear-gradient(var(--muted), var(--muted)) bottom / 100% 1.5px no-repeat; opacity: 0.8; }
 .nf__line i { position: absolute; bottom: 0; left: 0; width: 3px; height: 26px; background: var(--accent); border-radius: 2px; animation: scrub 5.5s var(--ease-io) infinite alternate; }
@@ -21,4 +17,4 @@ html[data-theme="dark"] .nf__face { filter: drop-shadow(0 0 2px rgba(255, 255, 2
 .nf .btn { animation: rise 800ms var(--ease-out) 360ms both; }
 .nf__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; animation: rise 800ms var(--ease-out) 440ms both; }
 .nf__links .pill { text-decoration: none; }
-@media (prefers-reduced-motion: reduce) { .nf__line i { animation: none; left: 40%; } .nf__face { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .nf__line i { animation: none; left: 40%; } 
