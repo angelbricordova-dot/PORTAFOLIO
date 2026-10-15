@@ -31,14 +31,23 @@ Cualquier dirección que no exista muestra la página 404 personalizada (`public
 
 - **Trabajos**: título, cliente, categoría, mes, descripción y etiquetas. Sube imágenes (se optimizan solas a WebP) o pega enlaces de YouTube, Vimeo, Drive o `.mp4`. Puedes elegir la portada, ordenar los medios, destacar un trabajo (tarjeta grande) u ocultarlo.
 - **Bitácora mensual**: por cada mes anota clientes, entregas (videos, diseños, publicaciones, campañas), logro y notas privadas. El sitio calcula solo las cifras, la gráfica de actividad, los clientes más constantes, la racha y un texto de análisis. «Generar resumen» crea el texto del mes.
-- **Testimonios**: publica mensajes de texto, **audios** de tus clientes (MP3, M4A, OGG/OPUS hasta 5 MB), capturas de sus mensajes y videos (enlace). Cada uno puede llevar estrellas, foto de la persona y destacarse. Además hay un **enlace para tus clientes** (`tu-sitio/#testimonio`): lo abren, escriben su testimonio y te llega al panel como «pendiente»; tú lo revisas, lo editas si quieres y lo publicas. Para audios de WhatsApp (`.opus`) conviene convertirlos a MP3/M4A si quieres que también suenen en iPhone.
+- **Testimonios**: publica mensajes de texto, **audios** de tus clientes (botón «Subir audio de un cliente»; sirve cualquier audio, incluidas las notas de voz de WhatsApp), capturas de sus mensajes y videos (enlace). Cada uno puede llevar estrellas, foto de la persona y destacarse. Además hay un **enlace para tus clientes** (`tu-sitio/#testimonio`): lo abren, escriben su testimonio y te llega al panel como «pendiente»; tú lo revisas, lo editas si quieres y lo publicas.
 - **Clientes, Perfil, Servicios, Categorías**: todo lo que se ve en el sitio se edita aquí. En Perfil también están los años de experiencia («+8»), las fotos y las redes sociales (Instagram, TikTok, YouTube, LinkedIn, Behance, X, Threads, Facebook y Twitch).
 - **Respaldo**: descarga e importa un `.json` con todos tus datos.
 - Los cambios no se ven en el sitio hasta que pulsas **Publicar cambios** (o `Ctrl/Cmd + S`). Si cierras la pestaña sin publicar, el borrador se recupera al volver.
 
+## Compresión automática de archivos
+
+Todo lo que subes desde el panel se optimiza **en tu navegador, antes de subirlo**, para que el servidor guarde y sirva archivos livianos:
+
+- **Imágenes** → WebP, sin ampliarlas, hasta un peso objetivo según su uso (portadas ~500 KB, capturas de chat ~650 KB con texto legible, fotos de perfil ~380 KB, logos ~120 KB, avatares ~70 KB).
+- **Audios** (WhatsApp `.opus`, MP3, M4A, WAV…) → MP3 mono de calidad de voz, entre 32 y 64 kbps según el original. Un minuto pesa unos 240–480 KB y suena en todos los dispositivos, iPhone incluido. Si el navegador no puede leer el formato, se sube tal cual (si pesa menos de 5 MB).
+- Los archivos se sirven con caché de larga duración en el CDN de Netlify, así que la función casi no se ejecuta al verlos. Los datos del sitio se cachean 20 segundos en el CDN.
+- El codificador de MP3 es `lamejs` (se copia a `public/assets/js/vendor/` con `npm run assets`).
+
 ## Límites que conviene conocer
 
-- Cada archivo subido puede pesar hasta **5 MB** (límite de las funciones de Netlify). Sirve para imágenes y clips cortos. Para videos largos usa enlaces de YouTube o Vimeo.
+- Después de comprimir, cada archivo puede pesar hasta **5 MB** (límite de las funciones de Netlify); un audio puede durar hasta unos 20 minutos. Los GIF y los videos MP4 no se comprimen: para videos usa enlaces de YouTube o Vimeo. Para videos largos usa enlaces de YouTube o Vimeo.
 - Quitar una imagen de un trabajo no la borra del almacenamiento; no afecta al sitio.
 - El formulario público de testimonios limita a 3 envíos por hora por visitante y guarda como máximo 60 pendientes; nada se publica sin tu aprobación.
 - Un solo administrador: si dos personas publican a la vez, gana el último en guardar.

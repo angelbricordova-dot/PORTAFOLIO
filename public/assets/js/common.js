@@ -36,9 +36,9 @@ export const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : "");
 export const thisMonth = () => new Date().toISOString().slice(0, 7);
 
 /* ---------- datos ---------- */
-export async function loadSite() {
+export async function loadSite({ fresh = false } = {}) {
   try {
-    const res = await fetch("/api/data", { headers: { accept: "application/json" } });
+    const res = await fetch(fresh ? `/api/data?fresh=${Date.now()}` : "/api/data", { headers: { accept: "application/json" } });
     if (res.ok) {
       const doc = await res.json();
       // "settings" viene siempre del documento publicado (guarda qué novedades ya se aplicaron)

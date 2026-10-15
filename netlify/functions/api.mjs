@@ -134,6 +134,8 @@ export default async (req) => {
         headers: {
           "content-type": found.metadata?.type || "application/octet-stream",
           "cache-control": "public, max-age=31536000, immutable",
+          // los archivos nunca cambian (cada subida tiene un id nuevo): el CDN de Netlify los guarda y la función casi no se ejecuta
+          "netlify-cdn-cache-control": "public, max-age=31536000, durable",
           "x-content-type-options": "nosniff",
           "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
         },
@@ -143,7 +145,8 @@ export default async (req) => {
     if (path === "/api/data" && method === "GET") {
       const store = await getStorage();
       const doc = await store.get("site", { type: "json" });
-      return json(doc || { empty: true }, 200, { "cache-control": "public, max-age=0, must-revalidate" });
+      // el CDN guarda los datos 20 s: muchas visitas seguidas no ejecutan la función cada vez
+      return json(doc || { empty: true }, 200, { "cache-control": "public, max-age=0, must-revalidate", "netlify-cdn-cache-control": "public, s-maxage=20" });
     }
 
     // Testimonio enviado por un cliente: queda pendiente hasta que Lamont lo apruebe.

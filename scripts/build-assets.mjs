@@ -1,5 +1,5 @@
 // Copia las fuentes (latin) y genera el sprite de iconos Phosphor que usa el sitio.
-import { copyFileSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { copyFileSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 
 const fonts = [
   ["@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2", "bricolage.woff2"],
@@ -8,6 +8,10 @@ const fonts = [
   ["@fontsource-variable/syne/files/syne-latin-wght-normal.woff2", "syne.woff2"],
 ];
 for (const [src, out] of fonts) copyFileSync(`node_modules/${src}`, `public/assets/fonts/${out}`);
+
+// Codificador MP3 (lamejs, LGPL) que el panel usa para comprimir audios en el navegador
+mkdirSync("public/assets/js/vendor", { recursive: true });
+copyFileSync("node_modules/lamejs/lame.min.js", "public/assets/js/vendor/lame.min.js");
 
 const icons = `arrow-up-right arrow-right arrow-left play play-circle x plus trash pencil-simple upload-simple image video-camera link
 calendar-blank users chart-bar sparkle lock-simple sign-out floppy-disk eye eye-slash download-simple instagram-logo youtube-logo

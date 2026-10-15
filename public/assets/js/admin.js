@@ -68,7 +68,7 @@ function logout(message = "") {
 $("#logout").addEventListener("click", () => { if (!dirty || confirm("Tienes cambios sin publicar. ¿Salir de todos modos?")) logout(); });
 
 async function start() {
-  S = normalize(await loadSite());
+  S = normalize(await loadSite({ fresh: true }));
   const draft = safe(() => JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"));
   if (draft?.site && confirm("Encontré cambios sin publicar de tu última sesión. ¿Quieres recuperarlos?")) {
     S = normalize(draft.site);
@@ -328,7 +328,7 @@ async function addFiles(files) {
   for (const file of files) {
     drop.querySelector("b").textContent = `Subiendo ${file.name}…`;
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, { progress: (t) => { drop.querySelector("b").textContent = t; } });
       draftMedia.push({ url, caption: "" });
       if (!draftCover && file.type.startsWith("image/")) draftCover = url;
     } catch (e) { toast(e.message, true); }
@@ -337,22 +337,118 @@ async function addFiles(files) {
 }
 
 // Las imágenes se reducen y pasan a WebP en el navegador: cargan rápido y caben en el límite de 5 MB.
+/* ---------- Subida con compresión ----------
+   Todo se optimiza en tu navegador antes de subirlo: así el servidor guarda y sirve archivos
+   mucho más livianos, el sitio carga rápido y el almacenamiento dura mucho más. */
+const MB = 1024 * 1024;
 const AUDIO_EXT = { mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", ogg: "audio/ogg", oga: "audio/ogg", opus: "audio/ogg", wav: "audio/wav", weba: "audio/webm" };
-async function uploadFile(file) {
-  const ext = file.name.split(".").pop().toLowerCase();
-  let blob = file, type = AUDIO_EXT[ext] || file.type;
-  if (type.startsWith("image/") && type !== "image/gif") {
-    const bmp = await createImageBitmap(file);
-    const scale = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
+// lado mayor máximo, peso objetivo y calidad mínima según para qué sirve la imagen
+const IMAGE_PRESETS = {
+  cover: { maxDim: 1800, target: 520 * 1024, minQ: 0.72 },
+  shot: { maxDim: 1600, target: 650 * 1024, minQ: 0.82 }, // capturas de chats: el texto tiene que leerse
+  photo: { maxDim: 1400, target: 380 * 1024, minQ: 0.72 },
+  logo: { maxDim: 600, target: 120 * 1024, minQ: 0.8 },
+  avatar: { maxDim: 400, target: 70 * 1024, minQ: 0.8 },
+};
+const fmtSize = (n) => (n >= MB ? `${(n / MB).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+const tick = () => new Promise((r) => setTimeout(r));
+
+// WebP, sin ampliar, bajando primero la calidad y luego el tamaño hasta llegar al peso objetivo
+async function compressImage(file, kind = "cover") {
+  const { maxDim, target, minQ } = IMAGE_PRESETS[kind] || IMAGE_PRESETS.cover;
+  const bmp = await createImageBitmap(file);
+  const longSide = Math.max(bmp.width, bmp.height);
+  let dim = Math.min(maxDim, longSide), q = 0.88, blob = null;
+  for (let i = 0; i < 10; i++) {
+    const scale = Math.min(1, dim / longSide);
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale);
-    canvas.getContext("2d").drawImage(bmp, 0, 0, canvas.width, canvas.height);
-    blob = await new Promise((r) => canvas.toBlob(r, "image/webp", 0.86));
-    type = "image/webp";
+    canvas.width = Math.max(1, Math.round(bmp.width * scale)); canvas.height = Math.max(1, Math.round(bmp.height * scale));
+    const g = canvas.getContext("2d");
+    g.imageSmoothingQuality = "high";
+    g.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    blob = await new Promise((r) => canvas.toBlob(r, "image/webp", q));
+    if (!blob || blob.type !== "image/webp") { bmp.close?.(); throw new Error("Este navegador no puede optimizar imágenes. Usa Chrome, Edge o Firefox actualizados."); }
+    if (blob.size <= target || dim < 360) break;
+    if (q - 0.07 >= minQ) q -= 0.07; else dim = Math.round(dim * 0.88);
   }
-  if (!blob) throw new Error("No pude procesar la imagen");
-  if (blob.size > 5.5 * 1024 * 1024) throw new Error(`${file.name} pesa más de 5 MB. Para videos largos usa un enlace de YouTube o Vimeo.`);
+  bmp.close?.();
+  // si el original ya pesa menos y es compatible, se conserva tal cual
+  if (file.size <= blob.size && /^image\/(webp|jpeg)$/.test(file.type) && longSide <= maxDim) return { blob: file, type: file.type };
+  return { blob, type: "image/webp" };
+}
+
+async function loadLame() {
+  if (window.lamejs?.Mp3Encoder) return;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "/assets/js/vendor/lame.min.js";
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("No pude cargar el compresor de audio. Recarga la página e inténtalo de nuevo."));
+    document.head.append(s);
+  });
+}
+
+// Cualquier audio (WhatsApp .opus, M4A, WAV…) pasa a un MP3 mono de buena calidad para voz
+// que suena en todos los dispositivos, iPhone incluido. Devuelve null si el navegador no puede leerlo.
+async function compressAudio(file, progress = () => {}) {
+  progress("Leyendo audio…");
+  let decoded;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AC();
+    decoded = await ctx.decodeAudioData(await file.arrayBuffer());
+    ctx.close?.();
+  } catch { return null; }
+  const dur = decoded.duration;
+  if (!(dur > 0)) return null;
+  const rate = 32000;
+  const fit = Math.floor((4.8 * MB * 8) / dur / 1000);      // kbps máximos para que quepa en la subida
+  if (fit < 32) throw new Error(`El audio dura ${Math.ceil(dur / 60)} minutos y es demasiado largo para publicarlo. Recórtalo a menos de 20 minutos.`);
+  // calidad acorde al original: una nota de voz de WhatsApp (~20 kbps) no necesita 64 kbps
+  const srcKbps = (file.size * 8) / dur / 1000;
+  const want = srcKbps <= 40 ? 32 : srcKbps <= 80 ? 48 : 64;
+  const kbps = [64, 56, 48, 40, 32].find((v) => v <= Math.min(want, fit));
+  progress("Optimizando audio…");
+  const off = new OfflineAudioContext(1, Math.ceil(dur * rate), rate);  // mono y 32 kHz
+  const src = off.createBufferSource();
+  src.buffer = decoded; src.connect(off.destination); src.start();
+  const mono = (await off.startRendering()).getChannelData(0);
+  const pcm = new Int16Array(mono.length);
+  for (let i = 0; i < mono.length; i++) pcm[i] = Math.max(-1, Math.min(1, mono[i])) * 0x7fff;
+  await loadLame();
+  const enc = new window.lamejs.Mp3Encoder(1, rate, kbps);
+  const parts = [], block = 1152 * 16;
+  for (let i = 0, n = 0; i < pcm.length; i += block, n++) {
+    const out = enc.encodeBuffer(pcm.subarray(i, i + block));
+    if (out.length) parts.push(out);
+    if (n % 25 === 0) { progress(`Optimizando audio… ${Math.round((i / pcm.length) * 100)}%`); await tick(); }
+  }
+  const tail = enc.flush();
+  if (tail.length) parts.push(tail);
+  return new Blob(parts, { type: "audio/mpeg" });
+}
+
+/** Optimiza y sube un archivo. kind: cover | shot | photo | logo | avatar. Devuelve la URL pública. */
+async function uploadFile(file, { kind = "cover", progress } = {}) {
+  const ext = file.name.split(".").pop().toLowerCase();
+  let type = AUDIO_EXT[ext] || file.type, blob = file;
+  if (type.startsWith("image/") && type !== "image/gif") {
+    if (file.size > 40 * MB) throw new Error(`${file.name} pesa más de 40 MB. Redúcela un poco antes de subirla.`);
+    progress?.("Optimizando imagen…");
+    ({ blob, type } = await compressImage(file, kind));
+  } else if (type.startsWith("audio/")) {
+    if (file.size > 80 * MB) throw new Error(`${file.name} pesa más de 80 MB. Recórtalo antes de subirlo.`);
+    const mp3 = await compressAudio(file, progress);
+    // MP3, M4A y AAC suenan en todas partes: si el original ya pesa menos, se deja como está
+    if (mp3 && !(mp3.size >= file.size && ["mp3", "m4a", "aac"].includes(ext))) { blob = mp3; type = "audio/mpeg"; }
+    else if (file.size > 5.5 * MB) throw new Error("No pude leer este audio y pesa más de 5 MB. Conviértelo a MP3 e inténtalo de nuevo.");
+  } else if (type === "image/gif" && file.size > 2 * MB) {
+    toast("Los GIF pesan mucho y no se pueden comprimir. Si puedes, usa un video MP4 corto.", true);
+  }
+  if (blob.size > 5.5 * MB) throw new Error(`${file.name} pesa ${fmtSize(blob.size)} y el límite es 5 MB. Para videos largos usa un enlace de YouTube o Vimeo.`);
+  progress?.("Subiendo…");
   const out = await api("/api/upload", { method: "POST", body: blob, type });
+  if (blob !== file && file.size > 150 * 1024 && blob.size < file.size * 0.75) toast(`Optimizado: ${fmtSize(file.size)} → ${fmtSize(blob.size)}`);
   return out.url;
 }
 
@@ -385,7 +481,7 @@ function viewTestimonials() {
         <div class="meta"><span>${esc(starsText(p.rating))}</span><span>${esc(new Date(p.createdAt).toLocaleDateString("es"))}</span></div>
         <p style="margin-top:8px;white-space:pre-line;overflow-wrap:anywhere">${esc(p.message)}</p></div>
         <div class="item__actions" style="flex-direction:column;align-items:stretch"><button class="btn btn--sm btn--accent" data-act="pending-open" data-id="${esc(p.id)}">Revisar y publicar</button><button class="btn btn--sm btn--ghost" data-act="pending-del" data-id="${esc(p.id)}">Descartar</button></div></article>`).join("")}</div></section>` : ""}
-    <div class="toolbar"><button class="btn btn--accent" data-act="testi-new">${icon("plus")} Nuevo testimonio</button><span class="help">Sube audios de tus clientes, capturas de sus mensajes, videos o textos.</span></div>
+    <div class="toolbar"><button class="btn btn--accent" data-act="testi-audio">${icon("microphone")} Subir audio de un cliente</button><button class="btn btn--ghost" data-act="testi-new">${icon("plus")} Nuevo testimonio</button><span class="help">Audios, capturas de mensajes, videos o textos. Todo se comprime solo para que el sitio cargue rápido.</span></div>
     <div class="list">${list.length ? list.map((t) => {
       const [ico, label] = T_TYPES[t.type] || T_TYPES.text;
       return `<article class="item ${t.visible === false ? "is-hidden" : ""}" style="grid-template-columns:56px minmax(0,1fr) auto">
@@ -403,10 +499,10 @@ function viewTestimonials() {
 }
 
 let draftT = { media: "", avatar: "" };
-function openTestimonialForm(id, fromPending) {
+function openTestimonialForm(id, fromPending, preset) {
   const existing = S.testimonials.find((t) => t.id === id);
   const t = existing ? structuredClone(existing) : {
-    id: uid("t"), type: "text", name: fromPending?.name || "", role: fromPending?.role || "", quote: fromPending?.message || "",
+    id: uid("t"), type: preset?.type || "text", name: fromPending?.name || "", role: fromPending?.role || "", quote: fromPending?.message || "",
     rating: fromPending ? fromPending.rating : 5, media: "", avatar: "", date: thisMonth(), featured: false, visible: true, pendingId: fromPending?.id,
   };
   draftT = { media: t.media || "", avatar: t.avatar || "" };
@@ -430,10 +526,11 @@ function openTestimonialForm(id, fromPending) {
       const sync = () => { renderTMedia(form.elements.type.value); };
       form.onchange = (e) => { if (e.target.name === "type") sync(); };
       $("#avIn").addEventListener("change", async (e) => {
-        try { draftT.avatar = await uploadFile(e.target.files[0]); $("#avPrev").innerHTML = `<img src="${esc(draftT.avatar)}" alt="">`; } catch (err) { toast(err.message, true); }
+        try { draftT.avatar = await uploadFile(e.target.files[0], { kind: "avatar" }); $("#avPrev").innerHTML = `<img src="${esc(draftT.avatar)}" alt="">`; } catch (err) { toast(err.message, true); }
       });
       $("#avClear").addEventListener("click", () => { draftT.avatar = ""; $("#avPrev").innerHTML = icon("image"); });
       sync();
+      if (preset?.pick) $("#tFile")?.click();   // abre el selector de archivos directamente
     },
     onSubmit: (fd) => {
       const type = fd.get("type");
@@ -462,15 +559,16 @@ function renderTMedia(type) {
   const parsed = cur ? parseMedia(cur) : null;
   const preview = !cur ? "" : parsed?.type === "audio" ? `<audio controls src="${esc(cur)}" style="width:100%"></audio>` : parsed?.type === "image" ? `<div class="thumb" style="width:120px;height:90px"><img src="${esc(cur)}" alt=""></div>` : `<small class="muted">${esc(cur)}</small>`;
   box.innerHTML = `
-    ${type !== "video" ? `<label class="drop" id="tDrop"><input type="file" id="tFile" accept="${accept}" hidden>${icon("upload-simple")}<b>${cur ? "Cambiar archivo" : "Arrastra el archivo o toca para elegirlo"}</b><span class="help">${type === "audio" ? "MP3, M4A, OGG u OPUS hasta 5 MB. Si es una nota de voz de WhatsApp (.opus) y quieres que suene también en iPhone, conviértela a MP3 o M4A." : "Hasta 5 MB. Las imágenes se optimizan solas."}</span></label>` : ""}
+    ${type !== "video" ? `<label class="drop" id="tDrop"><input type="file" id="tFile" accept="${accept}" hidden>${icon("upload-simple")}<b>${cur ? "Cambiar archivo" : "Arrastra el archivo o toca para elegirlo"}</b><span class="help">${type === "audio" ? "Sirve cualquier audio: notas de voz de WhatsApp (.opus), MP3, M4A, WAV… Se convierte solo a un MP3 liviano y de buena calidad que suena en todos los dispositivos, iPhone incluido." : "Se optimiza sola: se ve igual de nítida pero pesa mucho menos."}</span></label>` : ""}
     <div class="add-link"><input type="url" id="tLink" placeholder="${type === "video" ? "Enlace de YouTube, Vimeo, Drive o .mp4" : "…o pega un enlace directo"}" value="${cur && /^https?:/.test(cur) ? esc(cur) : ""}" aria-label="Enlace"><button class="btn btn--sm" type="button" id="tLinkSet">Usar enlace</button></div>
     ${preview ? `<div style="margin-top:6px">${preview}</div><button type="button" class="btn btn--sm btn--ghost" id="tClear" style="justify-self:start">Quitar</button>` : ""}`;
   const file = $("#tFile"), drop = $("#tDrop");
   if (file) {
     file.addEventListener("change", async () => {
       if (!file.files[0]) return;
-      drop.querySelector("b").textContent = `Subiendo ${file.files[0].name}…`;
-      try { draftT.media = await uploadFile(file.files[0]); } catch (e) { toast(e.message, true); }
+      const say = (t) => { drop.querySelector("b").textContent = t; };
+      say(`Subiendo ${file.files[0].name}…`);
+      try { draftT.media = await uploadFile(file.files[0], { kind: "shot", progress: say }); } catch (e) { toast(e.message, true); }
       renderTMedia(type);
     });
     drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
@@ -478,7 +576,8 @@ function renderTMedia(type) {
     drop.addEventListener("drop", async (e) => {
       e.preventDefault(); drop.classList.remove("over");
       if (!e.dataTransfer.files[0]) return;
-      try { draftT.media = await uploadFile(e.dataTransfer.files[0]); } catch (err) { toast(err.message, true); }
+      const say = (t) => { drop.querySelector("b").textContent = t; };
+      try { draftT.media = await uploadFile(e.dataTransfer.files[0], { kind: "shot", progress: say }); } catch (err) { toast(err.message, true); }
       renderTMedia(type);
     });
   }
@@ -575,7 +674,7 @@ function openClientForm(id) {
         <button type="button" class="btn btn--sm btn--ghost" id="logoClear">Quitar</button></div></div>`,
     onOpen: () => {
       $("#logoIn").addEventListener("change", async (e) => {
-        try { draftLogo = await uploadFile(e.target.files[0]); $("#logoPrev").innerHTML = `<img src="${esc(draftLogo)}" alt="">`; } catch (err) { toast(err.message, true); }
+        try { draftLogo = await uploadFile(e.target.files[0], { kind: "logo" }); $("#logoPrev").innerHTML = `<img src="${esc(draftLogo)}" alt="">`; } catch (err) { toast(err.message, true); }
       });
       $("#logoClear").addEventListener("click", () => { draftLogo = ""; $("#logoPrev").textContent = (c.name || "?")[0].toUpperCase(); });
     },
@@ -734,6 +833,7 @@ $("#view").addEventListener("click", (e) => {
     case "project-vis": { const p = find(S.projects); p.visible = p.visible === false; touch(); return paint(); }
     case "project-del": if (confirmDel("este trabajo")) { S.projects = S.projects.filter((p) => p.id !== id); touch(); go("projects"); } return;
     case "testi-new": return openTestimonialForm();
+    case "testi-audio": return openTestimonialForm(null, null, { type: "audio", pick: true });
     case "testi-edit": return openTestimonialForm(id);
     case "testi-star": { const t = find(S.testimonials); t.featured = !t.featured; touch(); return paint(); }
     case "testi-vis": { const t = find(S.testimonials); t.visible = t.visible === false; touch(); return paint(); }
@@ -765,7 +865,7 @@ $("#view").addEventListener("click", (e) => {
       return api("/api/health").then((r) => { out.textContent = JSON.stringify(r, null, 2); }, (e) => { out.textContent = `No se pudo probar: ${e.message}`; });
     }
     case "export": return exportData();
-    case "reload": if (!dirty || confirm("Se perderán los cambios sin publicar. ¿Continuar?")) { safe(() => localStorage.removeItem(DRAFT_KEY)); dirty = false; loadSite().then((s) => { S = normalize(s); go(view); setStatus(); toast("Recargado desde lo publicado"); }); } return;
+    case "reload": if (!dirty || confirm("Se perderán los cambios sin publicar. ¿Continuar?")) { safe(() => localStorage.removeItem(DRAFT_KEY)); dirty = false; loadSite({ fresh: true }).then((s) => { S = normalize(s); go(view); setStatus(); toast("Recargado desde lo publicado"); }); } return;
     case "clear-demo": {
       if (!confirm("¿Borrar todo el contenido de ejemplo?")) return;
       S.projects = S.projects.filter((x) => !x.demo); S.clients = S.clients.filter((x) => !x.demo); S.months = S.months.filter((x) => !x.demo);
@@ -802,7 +902,7 @@ $("#view").addEventListener("change", async (e) => {
   const key = e.target.dataset?.upload;
   if (key && e.target.files[0]) {
     try {
-      S.profile[key] = await uploadFile(e.target.files[0]);
+      S.profile[key] = await uploadFile(e.target.files[0], { kind: key === "logo" ? "logo" : "photo" });
       $(`#prev-${key}`).innerHTML = `<img src="${esc(S.profile[key])}" alt="">`;
       touch(); applyLogo(); toast("Imagen lista. Publica los cambios para verla en el sitio.");
     } catch (err) { toast(err.message, true); }
