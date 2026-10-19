@@ -103,6 +103,41 @@ function cleanDoc(input) {
   return doc;
 }
 
+/* ---------- Finanzas (privado: solo con sesión de administrador, nunca en /api/data) ---------- */
+const MAX_FINANCE = 4 * 1024 * 1024;
+const CLIENT_STATES = ["prospecto", "activo", "pausado", "terminado"];
+const PAY_TYPES = ["mensual", "proyecto", "entrega"];
+const money = (v) => { const n = Number(v); return Number.isFinite(n) ? Math.round(Math.min(Math.max(n, 0), 1e9) * 100) / 100 : 0; };
+const day = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? String(v) : "");
+const safeId = (v) => String(v ?? "").replace(/[^\w-]/g, "").slice(0, 40) || randomUUID();
+
+function cleanFinance(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  const { clients, team, entries } = input;
+  if (![clients, team, entries].every(Array.isArray)) return null;
+  if (clients.length > 500 || team.length > 200 || entries.length > 20000) return null;
+  const deal = (d) => ({ type: PAY_TYPES.includes(d?.type) ? d.type : "proyecto", amount: money(d?.amount) });
+  return {
+    currency: "USD",
+    clients: clients.map((c) => ({
+      id: safeId(c.id), name: clip(c.name, 80), status: CLIENT_STATES.includes(c.status) ? c.status : "activo",
+      service: clip(c.service, 100), contact: clip(c.contact, 120), since: day(c.since), deal: deal(c.deal), notes: clip(c.notes, 600),
+    })),
+    team: team.map((w) => ({
+      id: safeId(w.id), name: clip(w.name, 80), role: clip(w.role, 80), status: w.status === "inactivo" ? "inactivo" : "activo",
+      pay: deal(w.pay), contact: clip(w.contact, 120), notes: clip(w.notes, 600),
+      alloc: (Array.isArray(w.alloc) ? w.alloc : []).slice(0, 30).map((a) => ({ clientId: safeId(a.clientId), percent: Math.min(100, money(a.percent)) })),
+    })),
+    entries: entries.map((e) => ({
+      id: safeId(e.id), date: day(e.date), kind: e.kind === "expense" ? "expense" : "income", amount: money(e.amount),
+      status: ["cobrado", "pagado"].includes(e.status) ? e.status : "pendiente",
+      clientId: e.clientId ? safeId(e.clientId) : "", workerId: e.workerId ? safeId(e.workerId) : "",
+      category: clip(e.category, 60), desc: clip(e.desc, 200), method: clip(e.method, 40),
+      alloc: (Array.isArray(e.alloc) ? e.alloc : []).slice(0, 30).map((a) => ({ clientId: safeId(a.clientId), amount: money(a.amount) })),
+    })),
+  };
+}
+
 // Límite sencillo por IP para el formulario público (por instancia; basta para frenar el spam casual).
 const hits = new Map();
 function throttled(req) {
@@ -193,6 +228,29 @@ export default async (req) => {
       const store = await getStorage();
       await store.setJSON("site", doc);
       return json({ ok: true, updatedAt: doc.updatedAt });
+    }
+
+    if (path === "/api/finance" && method === "GET") {
+      const store = await getStorage();
+      const doc = await store.get("finance", { type: "json" });
+      return json({ doc: doc || null, rev: doc?.rev || 0 }, 200, { "cache-control": "private, no-store" });
+    }
+
+    if (path === "/api/finance" && method === "PUT") {
+      const raw = await req.text();
+      if (raw.length > MAX_FINANCE) return fail(413, "Los datos financieros son demasiado grandes");
+      let body; try { body = JSON.parse(raw); } catch { return fail(400, "Formato de datos inválido"); }
+      const doc = cleanFinance(body.doc);
+      if (!doc) return fail(400, "Formato de datos inválido");
+      const store = await getStorage();
+      const current = await store.get("finance", { type: "json" });
+      const rev = current?.rev || 0;
+      // si otro dispositivo guardó antes, no se pisan sus cambios
+      if (Number(body.baseRev) !== rev) return fail(409, "Otro dispositivo guardó cambios más recientes. Recarga la página para verlos.");
+      doc.rev = rev + 1;
+      doc.updatedAt = new Date().toISOString();
+      await store.setJSON("finance", doc);
+      return json({ ok: true, rev: doc.rev }, 200, { "cache-control": "private, no-store" });
     }
 
     // Diagnóstico: comprueba que el almacenamiento (Netlify Blobs) lee y escribe.

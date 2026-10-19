@@ -33,7 +33,14 @@ Cualquier dirección que no exista muestra la página 404 personalizada (`public
 - **Bitácora mensual**: por cada mes anota clientes, entregas (videos, diseños, publicaciones, campañas), logro y notas privadas. El sitio calcula solo las cifras, la gráfica de actividad, los clientes más constantes, la racha y un texto de análisis. «Generar resumen» crea el texto del mes.
 - **Testimonios**: publica mensajes de texto, **audios** de tus clientes (botón «Subir audio de un cliente»; sirve cualquier audio, incluidas las notas de voz de WhatsApp), capturas de sus mensajes y videos (enlace). Cada uno puede llevar estrellas, foto de la persona y destacarse. Además hay un **enlace para tus clientes** (`tu-sitio/#testimonio`): lo abren, escriben su testimonio y te llega al panel como «pendiente»; tú lo revisas, lo editas si quieres y lo publicas.
 - **Clientes, Perfil, Servicios, Categorías**: todo lo que se ve en el sitio se edita aquí. En Perfil también están los años de experiencia («+8»), las fotos y las redes sociales (Instagram, TikTok, YouTube, LinkedIn, Behance, X, Threads, Facebook y Twitch).
-- **Respaldo**: descarga e importa un `.json` con todos tus datos.
+- **Finanzas** (privado): control de tus clientes, tu equipo, ingresos y gastos en dólares. Tiene cuatro pestañas:
+  - **Resumen**: ganancia neta, ingresos cobrados, gastos pagados, lo que está por cobrar y por pagar, una gráfica de 12 meses (con vista de tabla) y la **ganancia real por cliente** (lo cobrado menos lo que costó atenderlo). Se filtra por mes, últimos 3 meses, año o todo.
+  - **Movimientos**: registra ingresos (cada uno ligado a un cliente) y gastos. Un gasto, por ejemplo el pago a un trabajador, puede **repartirse entre varios clientes**; lo que no asignes cuenta como gasto general. Marca cada movimiento como cobrado/pagado o pendiente con un clic. Botones para **generar los cobros y sueldos mensuales** y para descargar CSV (formato Excel en español o estándar).
+  - **Clientes**: estado (prospecto, activo, pausado, terminado), servicio, cómo te paga (mensual, por proyecto o por entrega) y notas. Puedes traer los clientes que ya tienes en el portafolio.
+  - **Equipo**: cada trabajador con su forma de pago (mensual, por proyecto o por entrega), su tarifa habitual y, si atiende a varios clientes, su reparto habitual en porcentajes.
+  - Los datos financieros **nunca se mezclan con los del sitio**: se guardan aparte, solo se leen con tu sesión de administrador y no se publican. Se guardan solos cada vez que cambias algo (no hace falta «Publicar cambios») y, si abres el panel en dos dispositivos, no se pisan entre sí.
+  - La ganancia se calcula por **caja**: solo cuenta lo ya cobrado y lo ya pagado; lo pendiente se muestra aparte. Es un control tuyo, no un programa de contabilidad ni de impuestos.
+- **Respaldo**: descarga e importa un `.json` con todos tus datos del sitio. Los datos financieros tienen su propio respaldo dentro de Finanzas → Resumen.
 - Los cambios no se ven en el sitio hasta que pulsas **Publicar cambios** (o `Ctrl/Cmd + S`). Si cierras la pestaña sin publicar, el borrador se recupera al volver.
 
 ## Compresión automática de archivos

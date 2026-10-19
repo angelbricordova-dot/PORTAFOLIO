@@ -1,3 +1,4 @@
+import { initFinance, financeHTML } from "./finance.js";
 import { esc, safeUrl, icon, SOCIALS, uid, slug, loadSite, normalize, parseMedia, coverOf, analyze, monthSummary, monthLong, monthName, cap, thisMonth, DELIVERABLES } from "./common.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -10,6 +11,7 @@ let dirty = false;
 let view = "home";
 let token = safe(() => localStorage.getItem(TOKEN_KEY));
 let filters = { q: "", cat: "all" };
+let financeReady = false;
 let pending = [];      // testimonios enviados por clientes, esperando revisión
 
 function safe(fn) { try { return fn(); } catch { return null; } }
@@ -77,6 +79,10 @@ async function start() {
   $("#login").hidden = true;
   $("#app").hidden = false;
   applyLogo();
+  if (!financeReady) {
+    financeReady = true;
+    initFinance({ api, toast, openDialog, repaint: () => { if (view === "finance") paint(); }, siteClientNames: () => S.clients.filter((c) => !c.demo).map((c) => c.name) });
+  }
   go(view);
   if (S._migrated) { delete S._migrated; touch(); toast("Agregué tu caso de Airbnb a Servicios y Trabajos. Revísalo y pulsa «Publicar cambios»."); }
   setStatus();
@@ -136,6 +142,7 @@ function toast(text, isError = false) {
 /* ============ Navegación ============ */
 const VIEWS = {
   home: ["Resumen", "house"],
+  finance: ["Finanzas", "chart-bar"],
   projects: ["Trabajos", "film-strip"],
   testimonials: ["Testimonios", "quotes"],
   months: ["Bitácora mensual", "calendar-blank"],
@@ -164,7 +171,7 @@ function go(name) {
 $("#nav").addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) { go(b.dataset.go); scrollTo(0, 0); } });
 
 function paint() {
-  $("#view").innerHTML = ({ home: viewHome, projects: viewProjects, testimonials: viewTestimonials, months: viewMonths, clients: viewClients, profile: viewProfile, services: viewServices, categories: viewCategories, backup: viewBackup })[view]();
+  $("#view").innerHTML = ({ home: viewHome, finance: financeHTML, projects: viewProjects, testimonials: viewTestimonials, months: viewMonths, clients: viewClients, profile: viewProfile, services: viewServices, categories: viewCategories, backup: viewBackup })[view]();
 }
 
 /* ============ Resumen ============ */
