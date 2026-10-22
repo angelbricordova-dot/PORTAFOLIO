@@ -11,6 +11,7 @@ async function boot() {
   site = normalize(await loadSite());
   renderHero();
   renderRoles();
+  renderActive();
   renderWork();
   renderJourney();
   renderTestimonials();
@@ -52,6 +53,35 @@ function renderRoles() {
   if (!roles.length) return host.parentElement.remove();
   // se espera a la tipografía para medir bien el ancho del bucle
   (document.fonts?.ready ?? Promise.resolve()).then(() => initTicker(host, $("#rolesTrack"), roles.map(esc)));
+}
+
+/* ---------- Trabajando ahora con (clientes activos y plazas libres) ---------- */
+function renderActive() {
+  const section = $("#activos");
+  const active = site.clients.filter((c) => c.active && c.name);
+  const cap = Math.min(12, Math.max(0, Number(site.settings.slots) || 0));
+  if (!active.length && !cap) return (section.hidden = true);
+  // sin plazas definidas se muestra un solo hueco genérico
+  const total = cap ? Math.max(cap, active.length) : active.length + 1;
+  const free = total - active.length;
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  $("#activeLead").textContent = cap
+    ? (free ? `${active.length} de ${total} plazas ocupadas · ${plural(free, "disponible", "disponibles")}` : "Agenda completa por ahora")
+    : `${plural(active.length, "cliente activo", "clientes activos")} · abierto a nuevos clientes`;
+  const note = $("#activeNote");
+  const text = site.settings.slotsNote || (cap && !free ? "Escríbeme y te aviso cuando se libere un lugar." : "");
+  note.hidden = !text; note.textContent = text;
+
+  const tile = (c, i) => {
+    const logo = safeUrl(c.logo), url = safeUrl(c.website);
+    const inner = `<span class="slot__mark">${logo ? `<img src="${esc(logo)}" alt="" loading="lazy">` : esc(c.name.trim()[0]?.toUpperCase())}</span>
+      <span class="slot__text"><b>${esc(c.name)}</b>${c.role ? `<small>${esc(c.role)}</small>` : ""}</span><span class="slot__badge">Activo</span>`;
+    const attrs = `class="slot slot--on reveal" style="--d:${i * 60}ms"`;
+    return url ? `<a ${attrs} href="${esc(url)}" target="_blank" rel="noopener">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
+  };
+  const freeTile = (i) => `<a class="slot slot--free reveal" style="--d:${i * 60}ms" href="#contacto"><span class="slot__mark">${icon("plus")}</span><span class="slot__text"><b>Plaza disponible</b><small>${cap ? "Escríbeme y empezamos" : "Abierto a nuevos clientes"}</small></span></a>`;
+  $("#slots").innerHTML = active.map(tile).join("") + Array.from({ length: free }, (_, i) => freeTile(active.length + i)).join("");
+  section.hidden = false;
 }
 
 /* ---------- Trabajos ---------- */

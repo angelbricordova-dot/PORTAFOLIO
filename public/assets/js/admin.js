@@ -251,6 +251,7 @@ function openProjectForm(id) {
   const p = existing ? structuredClone(existing) : { id: uid("p"), title: "", client: "", category: S.categories[0]?.id || "", date: thisMonth(), description: "", tags: [], cover: "", media: [], link: "", featured: false, visible: true };
   draftMedia = p.media || [];
   draftCover = p.cover || "";
+  const activeAtOpen = !!S.clients.find((c) => c.name.toLowerCase() === String(p.client || "").toLowerCase())?.active;
   openDialog({
     title: existing ? "Editar trabajo" : "Nuevo trabajo",
     body: `
@@ -264,7 +265,8 @@ function openProjectForm(id) {
       <div class="field"><span class="label">Etiquetas</span>${tagInput("tags", p.tags || [], "")}<span class="help">Escribe y pulsa Enter. Ej: Reels, Motion, Miniaturas.</span></div>
       <div class="field"><span class="label">Imágenes y videos</span><div id="mediaBox"></div></div>
       <div class="field"><label for="d-link">Enlace a la publicación (opcional)</label><input id="d-link" name="link" type="url" placeholder="https://" value="${esc(p.link)}"></div>
-      <div class="toolbar"><label class="check"><input type="checkbox" name="featured" ${p.featured ? "checked" : ""}> Destacado (tarjeta grande)</label><label class="check"><input type="checkbox" name="visible" ${p.visible !== false ? "checked" : ""}> Visible en el sitio</label></div>`,
+      <div class="toolbar"><label class="check"><input type="checkbox" name="featured" ${p.featured ? "checked" : ""}> Destacado (tarjeta grande)</label><label class="check"><input type="checkbox" name="visible" ${p.visible !== false ? "checked" : ""}> Visible en el sitio</label>
+        <label class="check"><input type="checkbox" name="activeClient" ${activeAtOpen ? "checked" : ""}> Sigo trabajando con este cliente (aparece en «Trabajando ahora con»)</label></div>`,
     onOpen: renderMediaBox,
     onSubmit: (fd, form) => {
       const clientName = String(fd.get("client")).trim();
@@ -284,6 +286,9 @@ function openProjectForm(id) {
         demo: false,
       };
       if (clientName && !S.clients.some((c) => c.name.toLowerCase() === clientName.toLowerCase())) S.clients.push({ id: uid("c"), name: clientName, logo: "", website: "" });
+      // solo cambia «activo» si moviste la casilla (así no se desactiva un cliente por accidente)
+      const wantActive = fd.get("activeClient") === "on";
+      if (clientName && wantActive !== activeAtOpen) S.clients.find((c) => c.name.toLowerCase() === clientName.toLowerCase()).active = wantActive;
       const i = S.projects.findIndex((x) => x.id === p.id);
       if (i >= 0) S.projects[i] = next; else S.projects.unshift(next);
       touch(); go("projects"); toast("Trabajo guardado. Recuerda publicar los cambios.");
@@ -655,13 +660,22 @@ function openMonthForm(id) {
 
 /* ============ Clientes ============ */
 function viewClients() {
-  const list = [...S.clients].sort((a, b) => a.name.localeCompare(b.name));
+  const list = [...S.clients].sort((x, y) => Number(!!y.active) - Number(!!x.active) || x.name.localeCompare(y.name));
+  const slots = Math.min(12, Math.max(0, Number(S.settings.slots) || 0));
+  const activeN = S.clients.filter((c) => c.active).length;
   return `
+    <section class="panel"><h2>Trabajando ahora con</h2>
+      <p class="muted">Los clientes que marques como activos salen al inicio del sitio, con las plazas que te quedan libres para nuevos proyectos.</p>
+      <div class="row">
+        <div class="field"><label for="slots">Plazas en total (clientes a la vez)</label><input id="slots" type="number" min="0" max="12" inputmode="numeric" data-bind="settings.slots" data-num="1" value="${slots || ""}" placeholder="Sin definir">
+          <span class="help">${activeN} activos ahora${slots ? ` · ${Math.max(0, slots - activeN)} plazas disponibles` : ". Si no defines las plazas, el sitio muestra «Abierto a nuevos clientes»."}</span></div>
+        <div class="field"><label for="slotsNote">Mensaje (opcional)</label><input id="slotsNote" maxlength="120" data-bind="settings.slotsNote" placeholder="Ej: Disponible desde noviembre" value="${esc(S.settings.slotsNote || "")}"></div>
+      </div></section>
     <div class="toolbar"><button class="btn btn--accent" data-act="client-new">${icon("plus")} Nuevo cliente</button></div>
     <div class="list">${list.length ? list.map((c) => `
       <article class="item"><div class="thumb">${safeUrl(c.logo) ? `<img src="${esc(safeUrl(c.logo))}" alt="">` : esc(c.name[0]?.toUpperCase() || "?")}</div>
-        <div><h3>${esc(c.name)} ${c.demo ? `<span class="tag tag--demo">Ejemplo</span>` : ""}</h3><div class="meta"><span>${S.projects.filter((p) => p.client === c.name).length} trabajos</span>${c.website ? `<span>${esc(c.website)}</span>` : ""}</div></div>
-        <div class="item__actions"><button class="icon-btn" data-act="client-edit" data-id="${esc(c.id)}" title="Editar" aria-label="Editar">${icon("pencil-simple")}</button><button class="icon-btn danger" data-act="client-del" data-id="${esc(c.id)}" title="Borrar" aria-label="Borrar">${icon("trash")}</button></div></article>`).join("")
+        <div><h3>${esc(c.name)} ${c.active ? `<span class="tag fstate fstate--activo">Activo ahora</span>` : ""} ${c.demo ? `<span class="tag tag--demo">Ejemplo</span>` : ""}</h3><div class="meta"><span>${S.projects.filter((p) => p.client === c.name).length} trabajos</span>${c.role ? `<span>${esc(c.role)}</span>` : ""}${c.website ? `<span>${esc(c.website)}</span>` : ""}</div></div>
+        <div class="item__actions"><button class="icon-btn ${c.active ? "on" : ""}" data-act="client-active" data-id="${esc(c.id)}" title="${c.active ? "Activo ahora: quitar" : "Marcar como activo ahora"}" aria-label="Activo ahora" aria-pressed="${!!c.active}">${icon("check-circle")}</button><button class="icon-btn" data-act="client-edit" data-id="${esc(c.id)}" title="Editar" aria-label="Editar">${icon("pencil-simple")}</button><button class="icon-btn danger" data-act="client-del" data-id="${esc(c.id)}" title="Borrar" aria-label="Borrar">${icon("trash")}</button></div></article>`).join("")
       : `<div class="empty"><strong>Sin clientes todavía</strong><span>Se agregan solos cuando los escribes en un trabajo o en la bitácora.</span></div>`}</div>`;
 }
 
@@ -674,6 +688,8 @@ function openClientForm(id) {
     title: existing ? "Editar cliente" : "Nuevo cliente",
     body: `
       <div class="field"><label for="c-name">Nombre</label><input id="c-name" name="name" required maxlength="80" value="${esc(c.name)}"></div>
+      <label class="check"><input type="checkbox" name="active" ${c.active ? "checked" : ""}> Estoy trabajando con este cliente ahora (aparece en «Trabajando ahora con»)</label>
+      <div class="field"><label for="c-role">Qué hago para él (opcional)</label><input id="c-role" name="role" maxlength="90" placeholder="Ej: Edición de videos y manejo de redes" value="${esc(c.role || "")}"></div>
       <div class="field"><label for="c-web">Sitio web (opcional)</label><input id="c-web" name="website" type="url" placeholder="https://" value="${esc(c.website)}"></div>
       <div class="field"><span class="label">Logo (opcional)</span>
         <div class="toolbar"><div class="thumb" id="logoPrev">${draftLogo ? `<img src="${esc(draftLogo)}" alt="">` : esc((c.name || "?")[0].toUpperCase())}</div>
@@ -687,7 +703,7 @@ function openClientForm(id) {
     },
     onSubmit: (fd) => {
       const name = String(fd.get("name")).trim();
-      const next = { ...c, name, website: safeUrl(fd.get("website")), logo: draftLogo, demo: false };
+      const next = { ...c, name, website: safeUrl(fd.get("website")), logo: draftLogo, active: fd.get("active") === "on", role: String(fd.get("role") || "").trim(), demo: false };
       if (existing && existing.name !== name) {
         S.projects.forEach((p) => { if (p.client === existing.name) p.client = name; });
         S.months.forEach((m) => { m.clients = (m.clients || []).map((x) => (x === existing.name ? name : x)); });
@@ -853,6 +869,7 @@ $("#view").addEventListener("click", (e) => {
     case "month-del": if (confirmDel("este mes")) { S.months = S.months.filter((m) => m.id !== id); touch(); go("months"); } return;
     case "client-new": return openClientForm();
     case "client-edit": return openClientForm(id);
+    case "client-active": { const c = find(S.clients); c.active = !c.active; touch(); return paint(); }
     case "client-del": if (confirmDel("este cliente")) { S.clients = S.clients.filter((c) => c.id !== id); touch(); go("clients"); } return;
     case "service-add": S.services.push({ id: uid("s"), icon: "sparkle", title: "Nuevo servicio", desc: "" }); touch(); return paint();
     case "service-del": if (confirmDel("este servicio")) { S.services.splice(i, 1); touch(); paint(); } return;

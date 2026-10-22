@@ -448,7 +448,7 @@ function readAlloc(fd) {
 
 function syncExpense() {
   const form = $("#dlgForm");
-  if (!form.elements.category) return;
+  if (!$("#xWorkerField")) return;   // solo dentro del formulario de gastos (otros cuadros también tienen «category»)
   $("#xWorkerField").hidden = form.elements.category.value !== C.TEAM_CATEGORY;
   const total = C.parseMoney(form.elements.amount.value);
   const used = [...form.querySelectorAll('[name="allocAmount"]')].reduce((t, i) => t + cents(C.parseMoney(i.value)), 0);
@@ -474,7 +474,7 @@ function onDialogClick(ev) {
 
 function onDialogInput(ev) {
   const form = $("#dlgForm");
-  if (!form.elements.category) return;
+  if (!$("#xWorkerField")) return;
   const t = ev.target;
   if (ev.type === "change" && t.dataset.fdChange === "worker" && t.value) {
     // prellena el monto y el reparto habitual del trabajador

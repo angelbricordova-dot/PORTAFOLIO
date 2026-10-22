@@ -453,3 +453,27 @@ html[data-theme="dark"] .theme .moon { display: none; }
 .tform { overflow-x: hidden; }
 .rating__row input { left: 0; top: 0; }
 .rating__row { position: relative; }
+
+/* ---------- Trabajando ahora con ---------- */
+.active__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 32px; margin-bottom: 18px; }
+.live { display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 8px 16px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.live i { width: 9px; height: 9px; border-radius: 50%; background: #1fa463; flex: none; animation: live 2.2s ease-out infinite; }
+@keyframes live { 0% { box-shadow: 0 0 0 0 rgba(31, 164, 99, 0.55); } 70%, 100% { box-shadow: 0 0 0 10px rgba(31, 164, 99, 0); } }
+.active__note { margin: -4px 0 18px; }
+.slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.slot { display: flex; align-items: center; gap: 14px; min-height: 100px; padding: 18px 20px; border-radius: 22px; text-decoration: none; position: relative; transition: transform 300ms var(--ease-out), background-color 200ms, border-color 200ms, box-shadow 300ms var(--ease-out); }
+.slot--on { background: var(--surface); }
+a.slot--on:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.slot__mark { width: 52px; height: 52px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--solid); color: var(--on-solid); font: 800 1.2rem var(--font-display); overflow: hidden; }
+.slot__mark img { width: 100%; height: 100%; object-fit: cover; }
+.slot__text { min-width: 0; }
+.slot__text b { display: block; font: 700 1.1rem/1.15 var(--font-display); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.slot__text small { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; }
+.slot__badge { margin-left: auto; align-self: flex-start; padding: 3px 10px; border-radius: var(--r-pill); background: #dff3e8; color: #0f5c37; font-size: 11px; font-weight: 700; }
+html[data-theme="dark"] .slot__badge { background: rgba(31, 164, 99, 0.2); color: #8be0b4; }
+.slot--free { border: 2px dashed color-mix(in srgb, var(--ink) 28%, transparent); background: transparent; color: var(--ink); }
+.slot--free .slot__mark { background: transparent; border: 2px dashed currentColor; color: var(--muted); font-size: 1.4rem; transition: transform 300ms var(--ease-out); }
+.slot--free:hover { background: var(--accent); border-color: var(--accent); border-style: solid; color: var(--accent-ink); transform: translateY(-3px); }
+.slot--free:hover .slot__text small, .slot--free:hover .slot__mark { color: var(--accent-ink); }
+.slot--free:hover .slot__mark { transform: rotate(90deg); }
+.slot--free:active { transform: scale(0.98); }

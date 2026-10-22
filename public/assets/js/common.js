@@ -88,6 +88,13 @@ export function normalize(site) {
 // Contenido que se agrega una sola vez a los datos ya publicados. La marca queda
 // guardada al publicar, así que si luego lo borras desde el panel no vuelve a aparecer.
 const MIGRATIONS = {
+  // Cliente con el que se trabaja actualmente; aparece en «Trabajando ahora con».
+  "active-v1": (site) => {
+    const name = "Julio Hall Investor Plaza";
+    const hit = site.clients.find((c) => c.name.toLowerCase() === name.toLowerCase());
+    if (hit) hit.active = true;
+    else site.clients.push({ id: "c-julio-hall", name, logo: "", website: "", active: true, role: "" });
+  },
   "airbnb-v1": (site) => {
     if (!site.services.some((s) => s.id === "s8")) site.services.push({"id": "s8", "icon": "house", "title": "Estrategia para Airbnb", "desc": "Posiciono tu alojamiento en Airbnb para ganar buenas reseñas y más reservas, y creo su cuenta de Instagram con una estrategia para atraer seguidores y huéspedes."});
     if (!site.projects.some((p) => p.id === "p-airbnb")) site.projects.unshift({"id": "p-airbnb", "title": "De casi sin huéspedes a un Airbnb con reservas", "client": "", "category": "estrategia", "date": "", "description": "Un apartamento en Airbnb que casi no recibía huéspedes. Armé toda la estrategia: creé desde cero su cuenta de Instagram y la hice crecer con contenido pensado para atraer seguidores, y posicioné el anuncio en Airbnb para conseguir buenas reseñas. Resultado: muchos más seguidores, más reservas y hasta 2.000 USD de ganancia en un mes entre varios huéspedes.", "tags": ["Airbnb", "Instagram", "Reseñas", "Estrategia"], "cover": "", "media": [], "link": "", "featured": true, "visible": true, "demo": false});
